@@ -41,10 +41,11 @@ struct pmic;
 struct power_fg {
 	int (*fg_battery_check) (struct pmic *p, struct pmic *bat);
 	int (*fg_battery_update) (struct pmic *p, struct pmic *bat);
+	int (*fg_ibatt) (struct pmic *p, struct pmic *bat);
 };
 
 struct power_chrg {
-	int (*chrg_type) (struct pmic *p);
+	int (*chrg_type) (struct pmic *p, u32 ctrl_en);
 	int (*chrg_bat_present) (struct pmic *p);
 	int (*chrg_state) (struct pmic *p, int state, int current);
 };

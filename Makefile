@@ -517,6 +517,7 @@ else
 
 endif # $(dot-config)
 
+KBUILD_CFLAGS += $(call cc-option, -mcpu=cortex-a9)	# Add by jhkim for AARCH64
 KBUILD_CFLAGS += -Os #-fomit-frame-pointer
 
 ifdef BUILD_TAG
@@ -600,11 +601,13 @@ libs-y += drivers/gpio/
 libs-y += drivers/i2c/
 libs-y += drivers/input/
 libs-y += drivers/mmc/
+ifdef CONFIG_NAND_MTD
 libs-y += drivers/mtd/
-libs-$(CONFIG_CMD_NAND) += drivers/mtd/nand/
+libs-y += drivers/mtd/nand/
 libs-y += drivers/mtd/onenand/
-libs-$(CONFIG_CMD_UBI) += drivers/mtd/ubi/
 libs-y += drivers/mtd/spi/
+libs-$(CONFIG_CMD_UBI) += drivers/mtd/ubi/
+endif
 libs-y += drivers/net/
 libs-y += drivers/net/phy/
 libs-y += drivers/pci/
@@ -1257,7 +1260,10 @@ clobber: rm-files := $(CLOBBER_FILES)
 
 PHONY += clobber
 
-clobber: clean
+tidy:
+	@find $(OBJTREE) -type f \( -name '*.depend*' \) -print | xargs rm -f
+
+clobber: clean tidy
 	$(call cmd,rmdirs)
 	$(call cmd,rmfiles)
 

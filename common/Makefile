@@ -57,7 +57,11 @@ obj-$(CONFIG_ENV_IS_IN_NVRAM) += env_embedded.o
 obj-$(CONFIG_ENV_IS_IN_FLASH) += env_flash.o
 obj-$(CONFIG_ENV_IS_IN_MMC) += env_mmc.o
 obj-$(CONFIG_ENV_IS_IN_FAT) += env_fat.o
+ifeq ($(CONFIG_NAND_MTD),y)
 obj-$(CONFIG_ENV_IS_IN_NAND) += env_nand.o
+else
+obj-$(CONFIG_ENV_IS_IN_NAND) += env_nand_ftl.o
+endif
 obj-$(CONFIG_ENV_IS_IN_NVRAM) += env_nvram.o
 obj-$(CONFIG_ENV_IS_IN_ONENAND) += env_onenand.o
 obj-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
@@ -145,7 +149,9 @@ obj-$(CONFIG_CMD_MMC) += cmd_mmc.o
 obj-$(CONFIG_CMD_MMC_SPI) += cmd_mmc_spi.o
 obj-$(CONFIG_MP) += cmd_mp.o
 obj-$(CONFIG_CMD_MTDPARTS) += cmd_mtdparts.o
-obj-$(CONFIG_CMD_NAND) += cmd_nand.o
+ifdef CONFIG_CMD_NAND
+obj-$(CONFIG_NAND_MTD) += cmd_nand.o
+endif
 obj-$(CONFIG_CMD_NET) += cmd_net.o
 obj-$(CONFIG_CMD_ONENAND) += cmd_onenand.o
 obj-$(CONFIG_CMD_OTP) += cmd_otp.o
@@ -254,6 +260,7 @@ endif
 obj-$(SPD) += ddr_spd.o
 obj-$(CONFIG_HWCONFIG) += hwconfig.o
 obj-$(CONFIG_BOUNCE_BUFFER) += bouncebuf.o
+obj-$(CONFIG_CMD_MMC) += bouncebuf.o
 obj-y += console.o
 obj-$(CONFIG_CROS_EC) += cros_ec.o
 obj-y += dlmalloc.o

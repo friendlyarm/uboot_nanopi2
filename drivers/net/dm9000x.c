@@ -257,7 +257,7 @@ dm9000_reset(void)
 	DM9000_iow(DM9000_GPR, 0);
 	/* Step 2: Software reset */
 	DM9000_iow(DM9000_NCR, (NCR_LBK_INT_MAC | NCR_RST));
-
+#if (0)
 	do {
 		DM9000_DBG("resetting the DM9000, 1st reset\n");
 		udelay(25); /* Wait at least 20 us */
@@ -270,7 +270,21 @@ dm9000_reset(void)
 		DM9000_DBG("resetting the DM9000, 2nd reset\n");
 		udelay(25); /* Wait at least 20 us */
 	} while (DM9000_ior(DM9000_NCR) & 1);
+#else
+	{
+		int dummy = 0;
+		DM9000_DBG("resetting the DM9000, 1st reset\n");
+		udelay(25); /* Wait at least 20 us */
+		dummy = DM9000_ior(DM9000_NCR) & 1;
 
+		DM9000_iow(DM9000_NCR, 0);
+		DM9000_iow(DM9000_NCR, (NCR_LBK_INT_MAC | NCR_RST)); /* Issue a second reset */
+
+		DM9000_DBG("resetting the DM9000, 2nd reset\n");
+		udelay(25); /* Wait at least 20 us */
+		dummy = DM9000_ior(DM9000_NCR) & 1;
+	}
+#endif
 	/* Check whether the ethernet controller is present */
 	if ((DM9000_ior(DM9000_PIDL) != 0x0) ||
 	    (DM9000_ior(DM9000_PIDH) != 0x90))
@@ -373,7 +387,8 @@ static int dm9000_init(struct eth_device *dev, bd_t *bd)
 	while (!(dm9000_phy_read(1) & 0x20)) {	/* autonegation complete bit */
 		udelay(1000);
 		i++;
-		if (i == 10000) {
+	//	if (i == 10000) {
+		if (i == 500) {
 			printf("could not establish link\n");
 			return 0;
 		}

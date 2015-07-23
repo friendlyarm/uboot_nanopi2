@@ -1246,7 +1246,9 @@ int fat_exists(const char *filename)
 long file_fat_read_at(const char *filename, unsigned long pos, void *buffer,
 		      unsigned long maxsize)
 {
+#ifdef DEBUG
 	printf("reading %s\n", filename);
+#endif
 	return do_fat_read_at(filename, pos, buffer, maxsize, LS_NO, 0);
 }
 
