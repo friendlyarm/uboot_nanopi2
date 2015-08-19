@@ -37,6 +37,9 @@
 #include "fastboot.h"
 #include "usbid.h"
 
+/* Board specific */
+extern int board_mmc_bootdev(void);
+
 /*
 #define	debug	printf
 */
@@ -102,11 +105,11 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
  */
 struct fastboot_device;
 struct fastboot_part {
-    char partition[32];
-    int dev_type;
-    int dev_no;
-    uint64_t start;
-    uint64_t length;
+	char partition[32];
+	int dev_type;
+	int dev_no;
+	uint64_t start;
+	uint64_t length;
 	unsigned int fs_type;
 	unsigned int flags;
 	struct fastboot_device *fd;
@@ -115,7 +118,7 @@ struct fastboot_part {
 
 struct fastboot_device {
 	char *device;
-    int dev_max;
+	int dev_max;
 	unsigned int dev_type;
 	unsigned int part_type;
 	unsigned int fs_support;
@@ -1012,6 +1015,7 @@ static int part_lists_make(const char *ptable_str, int ptable_str_len)
 	struct fastboot_part *fp;
 	parse_fnc_t **p_fnc_ptr;
 	const char *p = ptable_str;
+	const char *env_flash, *env_p;
 	int len = ptable_str_len;
 	int err = -1;
 
@@ -1021,29 +1025,50 @@ static int part_lists_make(const char *ptable_str, int ptable_str_len)
 	parse_comment(p, &p);
 	sort_string((char*)p, len);
 
+	env_flash = getenv("fastbootdev");
+	if (env_flash) {
+		env_flash  = strstr(env_flash, "flash=");
+		if (env_flash)
+			env_flash += strlen("flash=");
+	}
+
 	/* new parts table */
 	while (1) {
 		fd = f_devices;
-		fp = malloc(sizeof(*fp));
 
+		if (*p == '\0')
+			break;
+
+		fp = malloc(sizeof(*fp));
 		if (!fp) {
 			printf("** Can't malloc fastboot part table entry **\n");
 			err = -1;
 			break;
 		}
 
-		if (parse_part_head(p, &p)) {
+		p_fnc_ptr = parse_part_seqs;
+
+		if (env_flash) {
+			if ((*p_fnc_ptr)(env_flash, &env_p, &fd, fp) != 0) {
+				err = -1;
+				goto fail_parse;
+			}
+
+			p_fnc_ptr++;
+
+		} else if (parse_part_head(p, &p)) {
 			if (err)
 				printf("-- unknown parts head: [%s]\n", p);
 			break;
 		}
 
-		for (p_fnc_ptr = parse_part_seqs; *p_fnc_ptr; ++p_fnc_ptr) {
+		for (; *p_fnc_ptr; ++p_fnc_ptr) {
 			if ((*p_fnc_ptr)(p, &p, &fd, fp) != 0) {
 				err = -1;
 				goto fail_parse;
 			}
 		}
+
 		err = 0;
 	}
 
@@ -1838,9 +1863,19 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	int timeout = 0, f_connect = 0;
 	int err;
 
+#ifdef FASTBOOT_DEV_DEFAULT
+	p = getenv("fastbootdev");
+	if (NULL == p) {
+		char buf[64];
+		sprintf(buf, "flash=mmc,%d:parts", board_mmc_bootdev());
+		setenv("fastbootdev", buf);
+		saveenv();
+	}
+#endif
+
 	p = getenv("fastboot");
 	if (NULL == p) {
-		printf("*** Warning use default fastboot commands:%s ***\n", f_parts_default);
+		printf("*** Warning: use default fastboot commands ***\n");
 		p = f_parts_default;
 		init_parts = 0;
 
