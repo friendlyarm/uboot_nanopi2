@@ -99,7 +99,7 @@
  *	U-Boot default cmd
  */
 #define CONFIG_CMD_MEMORY   /* md mm nm mw cp cmp crc base loop mtest */
-#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
+//#define CONFIG_CMD_NET      /* bootp, tftpboot, rarpboot    */
 #define CONFIG_CMD_RUN      /* run command in env variable  */
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
 #define CONFIG_CMD_SOURCE   /* "source" command support */
@@ -180,7 +180,7 @@
  * Ethernet configuration
  * depend on CONFIG_CMD_NET
  */
-#define CONFIG_DRIVER_DM9000			1
+//#define CONFIG_DRIVER_DM9000			1
 
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
@@ -383,52 +383,52 @@
  * PMIC
  */
 
-#define CONFIG_PMIC
-	#if defined(CONFIG_PMIC)
-		#define CONFIG_CMD_I2C
-		#define CONFIG_PMIC_I2C
-		#define CONFIG_PMIC_I2C_BUS							I2C_0
+//#define CONFIG_PMIC
+#if defined(CONFIG_PMIC)
+	#define CONFIG_CMD_I2C
+	#define CONFIG_PMIC_I2C
+	#define CONFIG_PMIC_I2C_BUS							I2C_0
 
-		#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
-		#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
-		#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
-		#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
+	#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
+	#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
+	#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
+	#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
 
-		#define CONFIG_POWER
-		#define CONFIG_POWER_I2C
-		#define CONFIG_POWER_BATTERY
-		#define CONFIG_POWER_FG
-		#define CONFIG_POWER_MUIC
+	#define CONFIG_POWER
+	#define CONFIG_POWER_I2C
+	#define CONFIG_POWER_BATTERY
+	#define CONFIG_POWER_FG
+	#define CONFIG_POWER_MUIC
 
-		#define CONFIG_PMIC_NXE2000
-	#endif
+	#define CONFIG_PMIC_NXE2000
+#endif
 
-	#if defined(CONFIG_PMIC_NXE2000)
-		#define CONFIG_POWER_NXE2000
-		#define CONFIG_POWER_BATTERY_NXE2000
-		#define CONFIG_POWER_MUIC_NXE2000
-		#define CONFIG_POWER_FG_NXE2000
+#if defined(CONFIG_PMIC_NXE2000)
+	#define CONFIG_POWER_NXE2000
+	#define CONFIG_POWER_BATTERY_NXE2000
+	#define CONFIG_POWER_MUIC_NXE2000
+	#define CONFIG_POWER_FG_NXE2000
 
-		#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP_UBC
+	#define CONFIG_PMIC_CHARGING_PATH	CONFIG_PMIC_CHARGING_PATH_ADP_UBC
 
-		#define	CFG_IO_I2C0_SCL	((PAD_GPIO_E + 14) | PAD_FUNC_ALT0)
-		#define	CFG_IO_I2C0_SDA	((PAD_GPIO_E + 15) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C0_SCL	((PAD_GPIO_E + 14) | PAD_FUNC_ALT0)
+	#define	CFG_IO_I2C0_SDA	((PAD_GPIO_E + 15) | PAD_FUNC_ALT0)
 
-		#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
+	#define CONFIG_SW_UBC_DETECT							/* need with CONFIG_FASTBOOT. */
 
-		#define CONFIG_HAVE_BATTERY
+	//#define CONFIG_HAVE_BATTERY
 
-		//#define CONFIG_PMIC_REG_DUMP
-	#endif
+	//#define CONFIG_PMIC_REG_DUMP
+#endif
 
-	#if defined(CONFIG_HAVE_BATTERY)
-		//#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
-		//#define CONFIG_POWER_BATTERY_SMALL
-			#ifndef CONFIG_POWER_BATTERY_SMALL
-			#define CONFIG_BAT_CHECK
-			#define CONFIG_NXP_RTC_USE
-			#endif
-	#endif
+#if defined(CONFIG_HAVE_BATTERY)
+	//#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
+	//#define CONFIG_POWER_BATTERY_SMALL
+		#ifndef CONFIG_POWER_BATTERY_SMALL
+		#define CONFIG_BAT_CHECK
+		#define CONFIG_NXP_RTC_USE
+		#endif
+#endif
 
 
 /*-----------------------------------------------------------------------
