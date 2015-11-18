@@ -27,6 +27,8 @@ PLATFORM_RELFLAGS += -mno-unaligned-access
 endif
 endif
 
+PLATFORM_RELFLAGS += $(call cc-ifversion, -ge, 0409, -mno-unaligned-access)
+
 ifeq ($(CONFIG_ARM64), y)
 PLATFORM_RELFLAGS += -mstrict-align
 PLATFORM_RELFLAGS += -Wint-to-pointer-cast
