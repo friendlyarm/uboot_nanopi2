@@ -11,13 +11,25 @@
 #include <linux/ctype.h>
 #include <asm/io.h>
 
+DECLARE_GLOBAL_DATA_PTR;
+
 int display_options (void)
 {
+#if defined(CONFIG_SILENT_CONSOLE) && defined(CONFIG_SYS_CONSOLE_INFO_QUIET)
+	unsigned long flags = gd->flags;
+	gd->flags &= ~GD_FLG_SILENT;
+#endif
+
 #if defined(BUILD_TAG)
 	printf ("\n\n%s, Build: %s\n\n", version_string, BUILD_TAG);
 #else
 	printf ("\n\n%s\n\n", version_string);
 #endif
+
+#if defined(CONFIG_SILENT_CONSOLE) && defined(CONFIG_SYS_CONSOLE_INFO_QUIET)
+	gd->flags = flags;
+#endif
+
 	return 0;
 }
 

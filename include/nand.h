@@ -38,6 +38,8 @@ extern void nand_init(void);
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 
+#define CONFIG_NAND_RANDOMIZER
+
 #ifdef CONFIG_SYS_NAND_SELF_INIT
 void board_nand_init(void);
 int nand_register(int devnum);
@@ -49,6 +51,9 @@ typedef struct mtd_info nand_info_t;
 
 extern int nand_curr_device;
 extern nand_info_t nand_info[];
+#ifdef CONFIG_NAND_RANDOMIZER
+extern int no_nand_randomize;
+#endif
 
 static inline int nand_read(nand_info_t *info, loff_t ofs, size_t *len, u_char *buf)
 {

@@ -2773,33 +2773,84 @@ static void nand_decode_ext_id(struct mtd_info *mtd, struct nand_chip *chip,
 			(chip->cellinfo & NAND_CI_CELLTYPE_MSK)) {
 		unsigned int tmp;
 
-		/* Calc pagesize */
-		mtd->writesize = 2048 << (extid & 0x03);
-		extid >>= 2;
-		/* Calc oobsize */
-		switch (((extid >> 2) & 0x04) | (extid & 0x03)) {
-		case 0:
-			mtd->oobsize = 128;
-			break;
-		case 1:
-			mtd->oobsize = 224;
-			break;
-		case 2:
-			mtd->oobsize = 448;
-			break;
-		case 3:
-			mtd->oobsize = 64;
-			break;
-		case 4:
-			mtd->oobsize = 32;
-			break;
-		case 5:
-			mtd->oobsize = 16;
-			break;
-		default:
-			mtd->oobsize = 640;
-			break;
+		// add for H27BG8T2CTR
+		if (id_data[1] == 0xD7 && id_data[2] == 0x94 &&
+				id_data[3] == 0x91 && id_data[4] == 0x60 && id_data[5] == 0x44)
+		{
+			/* Calc pagesize */
+			mtd->writesize = 4096 << (extid & 0x03);
+			extid >>= 2;
+			/* Calc oobsize */
+			switch (((extid >> 2) & 0x04) | (extid & 0x03)) {
+				case 0:
+					mtd->oobsize = 640;
+					break;
+				case 1:
+					mtd->oobsize = 448;
+					break;
+				case 2:
+					mtd->oobsize = 224;
+					break;
+				case 3:
+					mtd->oobsize = 128;
+					break;
+				case 4:
+					mtd->oobsize = 64;
+					break;
+				case 5:
+					mtd->oobsize = 32;
+					break;
+				default:
+					mtd->oobsize = 640;
+					break;
+			}
 		}
+		// add for H27UBG8T2DTR
+		else if (id_data[1] == 0xD7 && id_data[2] == 0x14 &&
+				id_data[3] == 0x9e && id_data[4] == 0x34 && id_data[5] == 0x4a) {
+			mtd->writesize = 8192;
+			mtd->oobsize = 832;
+			extid >>= 2;
+		}
+		// add for H27UCG8T2ETR
+		else if (id_data[1] == 0xDE && id_data[2] == 0x14 &&
+				id_data[3] == 0xA7 && id_data[4] == 0x42 && id_data[5] == 0x4a) {
+			mtd->writesize = 16384;
+			mtd->oobsize = 1664;
+			extid >>= 2;
+		}
+		else {
+			/* Calc pagesize */
+			mtd->writesize = 2048 << (extid & 0x03);
+			extid >>= 2;
+			/* Calc oobsize */
+			switch (((extid >> 2) & 0x04) | (extid & 0x03)) {
+				case 0:
+					mtd->oobsize = 128;
+					break;
+				case 1:
+					mtd->oobsize = 224;
+					break;
+				case 2:
+					mtd->oobsize = 448;
+					break;
+				case 3:
+					mtd->oobsize = 64;
+					break;
+				case 4:
+					mtd->oobsize = 32;
+					break;
+				case 5:
+					mtd->oobsize = 16;
+					break;
+				default:
+					mtd->oobsize = 640;
+					break;
+			}
+			if ((id_data[3] & 0x3) == 0x3)	// add for H27UCG8T2BTR
+				mtd->oobsize <<= 1;
+		}
+
 		extid >>= 2;
 		/* Calc blocksize */
 		tmp = ((extid >> 1) & 0x04) | (extid & 0x03);
@@ -2810,6 +2861,26 @@ static void nand_decode_ext_id(struct mtd_info *mtd, struct nand_chip *chip,
 		else
 			mtd->erasesize = (64 * 1024) << tmp;
 		*busw = 0;
+	} else if (id_len >= 6 && id_data[0] == NAND_MFR_TOSHIBA &&
+			(chip->cellinfo & NAND_CI_CELLTYPE_MSK) && id_data[5] != 0x00) {
+		/* Calc pagesize */
+		mtd->writesize = 2048 << (extid & 0x03);
+		extid >>= 2;
+
+		/* datasheet have no OOB size information */
+
+		if ((id_data[3] & 0x3) == 0x3)	// TC58TEG(6-8)DCJTA
+			mtd->oobsize = 1280;
+		else 
+			mtd->oobsize = 32 * (mtd->writesize >> 9);
+
+		extid >>= 2;
+		/* Calc blocksize */
+		mtd->erasesize = (128 * 1024) <<
+			(((extid >> 1) & 0x04) | (extid & 0x03));
+		*busw = 0;
+
+
 	} else {
 		/* Calc pagesize */
 		mtd->writesize = 1024 << (extid & 0x03);
@@ -2922,6 +2993,10 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 	*maf_id = chip->read_byte(mtd);
 	*dev_id = chip->read_byte(mtd);
 
+	#if 0
+	printk ("[1]\tmaf_id: %02x, dev_id: %02x\n", *maf_id, *dev_id);
+	#endif
+
 	/*
 	 * Try again to make sure, as some systems the bus-hold or other
 	 * interface concerns can cause random data which looks like a
@@ -2934,6 +3009,10 @@ static const struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
 	/* Read entire ID string */
 	for (i = 0; i < 8; i++)
 		id_data[i] = chip->read_byte(mtd);
+
+	#if 0
+	printk ("[2]\tmaf_id: %02x, dev_id: %02x\n", id_data[0], id_data[1]);
+	#endif
 
 	if (id_data[0] != *maf_id || id_data[1] != *dev_id) {
 		pr_info("%s: second ID read did not match "
@@ -3114,6 +3193,8 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips,
  * all the uninitialized function pointers with the defaults and scans for a
  * bad block table if appropriate.
  */
+extern int nand_ecc_post_scan(struct mtd_info *mtd);		// added by freestyle
+
 int nand_scan_tail(struct mtd_info *mtd)
 {
 	int i;
@@ -3390,7 +3471,11 @@ int nand_scan_tail(struct mtd_info *mtd)
 	if (chip->options & NAND_SKIP_BBTSCAN)
 		chip->options |= NAND_BBT_SCANNED;
 
+#if (1)
+	return nand_ecc_post_scan(mtd);
+#else
 	return 0;
+#endif
 }
 
 /**

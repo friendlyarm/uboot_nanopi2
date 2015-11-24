@@ -14,6 +14,14 @@
 #include <asm-generic/errno.h>
 
 #define PAGE_SIZE 4096
+#ifdef CONFIG_MMU_ENABLE
+#if defined (CONFIG_MACH_S5P4418)
+#define CACHE_LINE_SIZE 32
+#elif defined (CONFIG_MACH_S5P6818)
+#define CACHE_LINE_SIZE 64
+#endif
+#endif
+#define CACHE_LINE_ALIGN(a, x) (a & ~(x-1))
 
 static int dwmci_wait_reset(struct dwmci_host *host, u32 value)
 {
@@ -38,25 +46,29 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 	desc->flags = desc0;
 	desc->cnt = desc1;
 	desc->addr = desc2;
-	desc->next_addr = (unsigned int)desc + sizeof(struct dwmci_idmac);
+	desc->next_addr = (uintptr_t)desc + sizeof(struct dwmci_idmac);
 }
 
-static void dwmci_prepare_data(struct dwmci_host *host,
-			       struct mmc_data *data,
-			       struct dwmci_idmac *cur_idmac,
-			       void *bounce_buffer)
+
+void dwmci_prepare_data(struct dwmci_host *host,
+		struct mmc_data *data)
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
-	ulong data_start, data_end;
-
+	ulong data_start, data_end, start_addr;
+	ALLOC_CACHE_ALIGN_BUFFER(struct dwmci_idmac, cur_idmac, data->blocks);
 
 	blk_cnt = data->blocks;
 
 	dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 
 	data_start = (ulong)cur_idmac;
-	dwmci_writel(host, DWMCI_DBADDR, (unsigned int)cur_idmac);
+	dwmci_writel(host, DWMCI_DBADDR, (uintptr_t)cur_idmac);
+
+	if (data->flags == MMC_DATA_READ)
+		start_addr = (uintptr_t)data->dest;
+	else
+		start_addr = (uintptr_t)data->src;
 
 	do {
 		flags = DWMCI_IDMAC_OWN | DWMCI_IDMAC_CH ;
@@ -68,9 +80,10 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 			cnt = data->blocksize * 8;
 
 		dwmci_set_idma_desc(cur_idmac, flags, cnt,
-				    (u32)bounce_buffer + (i * PAGE_SIZE));
+				start_addr + (i * PAGE_SIZE));
 
 		if (blk_cnt <= 8)
+			
 			break;
 		blk_cnt -= 8;
 		cur_idmac++;
@@ -78,7 +91,27 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 	} while(1);
 
 	data_end = (ulong)cur_idmac;
-	flush_dcache_range(data_start, data_end + ARCH_DMA_MINALIGN);
+	
+#ifdef CONFIG_MMU_ENABLE
+#ifdef CONFIG_MACH_S5P6818
+	debug("s=0x%08lx, (0x%08lx), e 0x%08lx, (0x%08lx)\n", 
+			start_addr, CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			start_addr + (data->blocks *512),
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
+
+	flush_dcache_range(CACHE_LINE_ALIGN(data_start,CACHE_LINE_SIZE), 
+			roundup(data_end + ARCH_DMA_MINALIGN, CACHE_LINE_SIZE));
+
+	if(data->flags == MMC_DATA_READ)
+		invalidate_dcache_range(CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
+	else	
+		flush_dcache_range(CACHE_LINE_ALIGN(start_addr, CACHE_LINE_SIZE), 
+			roundup(start_addr + (data->blocks *512), CACHE_LINE_SIZE));
+#else
+	flush_dcache_all();
+#endif
+#endif
 
 	ctrl = dwmci_readl(host, DWMCI_CTRL);
 	ctrl |= DWMCI_IDMAC_EN | DWMCI_DMA_EN;
@@ -108,14 +141,11 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		struct mmc_data *data)
 {
 	struct dwmci_host *host = mmc->priv;
-	ALLOC_CACHE_ALIGN_BUFFER(struct dwmci_idmac, cur_idmac,
-				 data ? DIV_ROUND_UP(data->blocks, 8) : 0);
 	int flags = 0, i;
 	unsigned int timeout = 100000;
 	u32 retry = 10000;
 	u32 mask, ctrl;
 	ulong start = get_timer(0);
-	struct bounce_buffer bbstate;
 
 	while (dwmci_readl(host, DWMCI_STATUS) & DWMCI_BUSY) {
 		if (get_timer(start) > timeout) {
@@ -126,19 +156,8 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
-	if (data) {
-		if (data->flags == MMC_DATA_READ) {
-			bounce_buffer_start(&bbstate, (void*)data->dest,
-					    data->blocksize *
-					    data->blocks, GEN_BB_WRITE);
-		} else {
-			bounce_buffer_start(&bbstate, (void*)data->src,
-					    data->blocksize *
-					    data->blocks, GEN_BB_READ);
-		}
-		dwmci_prepare_data(host, data, cur_idmac,
-				   bbstate.bounce_buffer);
-	}
+	if (data)
+		dwmci_prepare_data(host, data);
 
 	dwmci_writel(host, DWMCI_CMDARG, cmd->cmdarg);
 
@@ -188,7 +207,6 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		return -1;
 	}
 
-
 	if (cmd->resp_type & MMC_RSP_PRESENT) {
 		if (cmd->resp_type & MMC_RSP_136) {
 			cmd->response[0] = dwmci_readl(host, DWMCI_RESP3);
@@ -214,12 +232,9 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		ctrl = dwmci_readl(host, DWMCI_CTRL);
 		ctrl &= ~(DWMCI_DMA_EN);
 		dwmci_writel(host, DWMCI_CTRL, ctrl);
-
-		bounce_buffer_stop(&bbstate);
 	}
 
 	udelay(100);
-
 	return 0;
 }
 
@@ -245,7 +260,8 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 		return -EINVAL;
 	}
 
-	div = DIV_ROUND_UP(sclk, 2 * freq);
+	//div = DIV_ROUND_UP(sclk, 2 * freq);
+	div = (sclk / (2*freq));
 
 	dwmci_writel(host, DWMCI_CLKENA, 0);
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
@@ -382,6 +398,7 @@ int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk)
 	host->mmc = mmc_create(&host->cfg, host);
 	if (host->mmc == NULL)
 		return -1;
-
+	
 	return 0;
 }
+

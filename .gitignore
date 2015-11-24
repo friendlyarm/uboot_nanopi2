@@ -88,3 +88,6 @@ GTAGS
 *.orig
 *~
 \#*#
+
+# FTL prebuilt
+!*.o.prebuilt

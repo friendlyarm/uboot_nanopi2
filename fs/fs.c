@@ -25,6 +25,22 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#if 1
+#include <linux/spinlock.h>
+static DEFINE_SPINLOCK(fs_lock);
+#define	__fs_lock			do { spin_lock(&fs_lock); } while (0)
+#define	__fs_unlock		do { spin_unlock(&fs_lock); } while (0)
+#else
+#define	__fs_lock		do { } while (0)
+#define	__fs_unlock	do { } while (0)
+#endif
+
+#ifdef DEBUG
+#define pr_debug(m...)	printf(m)
+#else
+#define pr_debug(m...)
+#endif
+
 static block_dev_desc_t *fs_dev_desc;
 static disk_partition_t fs_partition;
 static int fs_type = FS_TYPE_ANY;
@@ -282,8 +298,11 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	if (argc > 7)
 		return CMD_RET_USAGE;
 
-	if (fs_set_blk_dev(argv[1], (argc >= 3) ? argv[2] : NULL, fstype))
+	__fs_lock;
+	if (fs_set_blk_dev(argv[1], (argc >= 3) ? argv[2] : NULL, fstype)) {
+		__fs_unlock;
 		return 1;
+	}
 
 	if (argc >= 4) {
 		addr = simple_strtoul(argv[3], NULL, 16);
@@ -300,6 +319,7 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 		filename = getenv("bootfile");
 		if (!filename) {
 			puts("** No boot file defined **\n");
+			__fs_unlock;
 			return 1;
 		}
 	}
@@ -315,9 +335,12 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 	time = get_timer(0);
 	len_read = fs_read(filename, addr, pos, bytes);
 	time = get_timer(time);
-	if (len_read <= 0)
+	if (len_read <= 0) {
+		__fs_unlock;
 		return 1;
+	}
 
+#ifdef DEBUG
 	printf("%d bytes read in %lu ms", len_read, time);
 	if (time > 0) {
 		puts(" (");
@@ -325,6 +348,9 @@ int do_load(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[],
 		puts(")");
 	}
 	puts("\n");
+#endif
+
+	__fs_unlock;
 
 	setenv_hex("filesize", len_read);
 

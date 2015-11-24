@@ -385,8 +385,14 @@ static int initr_spi(void)
 /* go init the NAND */
 int initr_nand(void)
 {
+#if defined(CONFIG_NAND_MTD)
 	puts("NAND:  ");
 	nand_init();
+#elif defined(CONFIG_NAND_FTL)
+#include <nand_ftl.h>
+	puts("NAND FTL:  ");
+	nand_ftl_init();
+#endif
 	return 0;
 }
 #endif

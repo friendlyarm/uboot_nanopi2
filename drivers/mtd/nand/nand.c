@@ -32,6 +32,9 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 int nand_curr_device = -1;
+#ifdef CONFIG_NAND_RANDOMIZER			/* for update_nand commad */
+int no_nand_randomize = 0;
+#endif
 
 
 nand_info_t nand_info[CONFIG_SYS_MAX_NAND_DEVICE];
@@ -88,8 +91,10 @@ static void nand_init_chip(int i)
 	mtd->priv = nand;
 	nand->IO_ADDR_R = nand->IO_ADDR_W = (void  __iomem *)base_addr;
 
+#ifdef CONFIG_NAND_MTD
 	if (board_nand_init(nand))
 		return;
+#endif
 
 	if (nand_scan(mtd, maxchips))
 		return;

@@ -326,7 +326,7 @@ static int do_mmc_write(cmd_tbl_t *cmdtp, int flag,
 	if (!mmc)
 		return CMD_RET_FAILURE;
 
-	printf("\nMMC write: dev # %d, block # %d, count %d ... ",
+	debug("\nMMC write: dev # %d, block # %d, count %d ... ",
 	       curr_device, blk, cnt);
 
 	if (mmc_getwp(mmc) == 1) {
@@ -334,7 +334,7 @@ static int do_mmc_write(cmd_tbl_t *cmdtp, int flag,
 		return CMD_RET_FAILURE;
 	}
 	n = mmc->block_dev.block_write(curr_device, blk, cnt, addr);
-	printf("%d blocks written: %s\n", n, (n == cnt) ? "OK" : "ERROR");
+	debug("%d blocks written: %s\n", n, (n == cnt) ? "OK" : "ERROR");
 
 	return (n == cnt) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
 }

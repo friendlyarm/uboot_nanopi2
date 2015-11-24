@@ -11,12 +11,15 @@
 #include <stdio_dev.h>
 #include <post.h>
 #include <linux/compiler.h>
+#include <linux/spinlock.h>
 #include <errno.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 static struct serial_device *serial_devices;
 static struct serial_device *serial_current;
+static DEFINE_SPINLOCK(serial_lock);
+
 /*
  * Table with supported baudrates (defined in config_xyz.h)
  */
@@ -456,7 +459,11 @@ void serial_putc(const char c)
  */
 void serial_puts(const char *s)
 {
+	spin_lock(&serial_lock);
+
 	get_current()->puts(s);
+
+	spin_unlock(&serial_lock);
 }
 
 /**
@@ -474,6 +481,7 @@ void serial_puts(const char *s)
 void default_serial_puts(const char *s)
 {
 	struct serial_device *dev = get_current();
+
 	while (*s)
 		dev->putc(*s++);
 }

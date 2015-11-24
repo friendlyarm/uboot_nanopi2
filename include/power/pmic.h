@@ -22,6 +22,11 @@ enum {
 	PMIC_CHARGER_ENABLE,
 };
 
+enum {
+	REGULATOR_ARM = 0,
+	REGULATOR_CORE,
+};
+
 struct p_i2c {
 	unsigned char addr;
 	unsigned char *buf;
@@ -38,13 +43,22 @@ struct p_spi {
 };
 
 struct pmic;
+
+struct power_regulator {
+	int arm_vol;
+	int core_vol;
+	int (*reg_set_voltage) (struct pmic *p, int type, int vol);
+	int (*reg_get_voltate) (struct pmic *p, int type);
+};
+
 struct power_fg {
 	int (*fg_battery_check) (struct pmic *p, struct pmic *bat);
 	int (*fg_battery_update) (struct pmic *p, struct pmic *bat);
+	int (*fg_ibatt) (struct pmic *p, struct pmic *bat);
 };
 
 struct power_chrg {
-	int (*chrg_type) (struct pmic *p);
+	int (*chrg_type) (struct pmic *p, u32 ctrl_en);
 	int (*chrg_bat_present) (struct pmic *p);
 	int (*chrg_state) (struct pmic *p, int state, int current);
 };
@@ -73,6 +87,7 @@ struct pmic {
 	struct power_battery *pbat;
 	struct power_chrg *chrg;
 	struct power_fg *fg;
+	struct power_regulator *regu;
 
 	struct pmic *parent;
 	struct list_head list;

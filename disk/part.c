@@ -51,6 +51,13 @@ static const struct block_drvr block_drvr[] = {
 #if defined(CONFIG_SANDBOX)
 	{ .name = "host", .get_dev = host_get_dev, },
 #endif
+#if defined(CONFIG_NAND_FTL)
+	{
+		.name = "nand",
+		.get_dev = nand_get_dev,
+//		.select_hwpart = nand_select_hwpart,
+	},
+#endif
 	{ },
 };
 
@@ -178,6 +185,9 @@ void dev_print (block_dev_desc_t *dev_desc)
 		break;
 	case IF_TYPE_DOC:
 		puts("device type DOC\n");
+		return;
+	case IF_TYPE_NAND:
+		puts("Please desc FTL version or something\n");
 		return;
 	case IF_TYPE_UNKNOWN:
 		puts("device type unknown\n");
@@ -322,6 +332,9 @@ static void print_part_header (const char *type, block_dev_desc_t * dev_desc)
 		break;
 	case IF_TYPE_HOST:
 		puts("HOST");
+		break;
+	case IF_TYPE_NAND:
+		puts("NAND");
 		break;
 	default:
 		puts ("UNKNOWN");

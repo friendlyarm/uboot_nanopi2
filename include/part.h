@@ -60,7 +60,8 @@ typedef struct block_dev_desc {
 #define IF_TYPE_SD		7
 #define IF_TYPE_SATA		8
 #define IF_TYPE_HOST		9
-#define IF_TYPE_MAX		10	/* Max number of IF_TYPE_* supported */
+#define IF_TYPE_NAND		10
+#define IF_TYPE_MAX		11	/* Max number of IF_TYPE_* supported */
 
 /* Part types */
 #define PART_TYPE_UNKNOWN	0x00
@@ -104,6 +105,8 @@ block_dev_desc_t* scsi_get_dev(int dev);
 block_dev_desc_t* usb_stor_get_dev(int dev);
 block_dev_desc_t* mmc_get_dev(int dev);
 int mmc_select_hwpart(int dev_num, int hwpart);
+block_dev_desc_t* nand_get_dev(int dev);
+int nand_select_hwpart(int dev_num, int hwpart);
 block_dev_desc_t* systemace_get_dev(int dev);
 block_dev_desc_t* mg_disk_get_dev(int dev);
 block_dev_desc_t *host_get_dev(int dev);
@@ -128,6 +131,8 @@ static inline block_dev_desc_t* scsi_get_dev(int dev) { return NULL; }
 static inline block_dev_desc_t* usb_stor_get_dev(int dev) { return NULL; }
 static inline block_dev_desc_t* mmc_get_dev(int dev) { return NULL; }
 static inline int mmc_select_hwpart(int dev_num, int hwpart) { return -1; }
+static inline block_dev_desc_t* nand_get_dev(int dev) { return NULL; }
+static inline int nand_select_hwpart(int dev_num, int hwpart) { return -1; }
 static inline block_dev_desc_t* systemace_get_dev(int dev) { return NULL; }
 static inline block_dev_desc_t* mg_disk_get_dev(int dev) { return NULL; }
 static inline block_dev_desc_t *host_get_dev(int dev) { return NULL; }
