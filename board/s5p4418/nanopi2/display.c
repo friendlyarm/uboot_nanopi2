@@ -25,10 +25,6 @@
 #include <asm/arch/mach-api.h>
 #include <asm/arch/display.h>
 
-extern void display_rgb(int module, unsigned int fbbase,
-					struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
-					struct disp_multily_param *pmly, struct disp_rgb_param *prgb);
-
 #define	INIT_VIDEO_SYNC(name)								\
 	struct disp_vsync_info name = {							\
 		.h_active_len	= CFG_DISP_PRI_RESOL_WIDTH,         \
@@ -78,13 +74,12 @@ extern void display_rgb(int module, unsigned int fbbase,
 		.interlace		= CFG_DISP_PRI_MLC_INTERLACE,		\
 	};
 
-#define	INIT_PARAM_RGB(name)							\
+#define	INIT_PARAM_RGB(name)						\
 	struct disp_rgb_param name = {							\
-		.lcd_mpu_type 	= 0,                                \
+		.lcd_mpu_type	= 0,								\
 	};
 
-
-int bd_display(void)
+static void bd_disp_rgb(void)
 {
 #if defined(CONFIG_DISPLAY_OUT_RGB)
 	INIT_VIDEO_SYNC(vsync);
@@ -93,8 +88,45 @@ int bd_display(void)
 	INIT_PARAM_RGB(rgb);
 
 	display_rgb(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
-		&vsync, &syncgen, &multily, &rgb);
+			&vsync, &syncgen, &multily, &rgb);
 	mdelay(50);
 #endif
+}
+
+static void bd_disp_hdmi(void)
+{
+#if defined(CONFIG_DISPLAY_OUT_HDMI)
+	int preset = 0;
+
+	INIT_VIDEO_SYNC(vsync);
+	INIT_PARAM_SYNCGEN(syncgen);
+	INIT_PARAM_MULTILY(multily);
+
+#define IS_720P(w, h)	((w) == 1280 && (h) ==  720)
+#define IS_1080P(w, h)	((w) == 1920 && (h) == 1080)
+
+	if (IS_720P(CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT))
+		preset = 0;
+	else if (IS_1080P(CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT))
+		preset = 1;
+	else
+		printf("hdmi not support %dx%d\n", CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT);
+
+	display_hdmi(CFG_DISP_OUTPUT_MODOLE, preset, CONFIG_FB_ADDR,
+			&vsync, &syncgen, &multily);
+#endif
+}
+
+int bd_display(void)
+{
+#if defined(CONFIG_DISPLAY_OUT_RGB)
+	bd_disp_rgb();
+#elif defined(CONFIG_DISPLAY_OUT_HDMI)
+	bd_disp_hdmi();
+#endif
+
+	printf("DISP: W=%4d, H=%4d, Bpp=%d\n",
+			CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT,
+			CFG_DISP_PRI_SCREEN_PIXEL_BYTE*8);
 	return 0;
 }

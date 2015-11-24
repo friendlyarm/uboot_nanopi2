@@ -270,6 +270,9 @@ void lcd_draw_boot_logo(unsigned int framebase, int x_resol, int y_resol, int pi
 
 	void (*PutPixel)(U32, int, int, int, int, U32) = NULL;
 
+	if (!x_resol || !y_resol)
+		return;
+
 	_lcd_width  = x_resol;
 	_lcd_height = y_resol;
 	_lcd_bpp    = pixelbyte * 8;
