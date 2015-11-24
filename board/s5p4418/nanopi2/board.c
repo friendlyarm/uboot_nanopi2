@@ -298,6 +298,29 @@ static void bd_alive_init(void)
 	}
 }
 
+/* DEFAULT channel for SD/eMMC boot */
+static int mmc_boot_dev = 2;
+
+int board_mmc_bootdev(void) {
+	return mmc_boot_dev;
+}
+
+#define SCR_SYSRSTCONFIG	IO_ADDRESS(0xC001023C)
+#define	MMC_BOOT_CH0		(0)
+#define	MMC_BOOT_CH1		(1 <<  3)
+#define	MMC_BOOT_CH2		(1 << 19)
+
+static void bd_bootdev_init(void)
+{
+	unsigned int rst = readl(SCR_SYSRSTCONFIG);
+
+	rst &= (1 << 19) | (1 << 3);
+	if (rst == MMC_BOOT_CH0) {
+		/* NanoPi 2 or SD boot for Smart4418 */
+		mmc_boot_dev = 0;
+	}
+}
+
 /* call from u-boot */
 int board_early_init_f(void)
 {
@@ -309,6 +332,7 @@ int board_early_init_f(void)
 #if defined(CONFIG_NXP_RTC_USE)
 	nxp_rtc_init();
 #endif
+	bd_bootdev_init();
 	return 0;
 }
 
@@ -356,7 +380,7 @@ static void auto_update(int io, int wait)
 	}
 
 	if (i == wait)
-		run_command (cmd, 0);
+		run_command(cmd, 0);
 }
 
 void bd_display_run(char *cmd, int bl_duty, int bl_on)
@@ -383,6 +407,7 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 		pwm_enable(CFG_LCD_PRI_PWM_CH);
 }
 
+
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
@@ -390,9 +415,20 @@ int board_late_init(void)
 {
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
-	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
+	sprintf(boot, "mmc dev %d", board_mmc_bootdev());
 	run_command(boot, 0);
 #endif
+
+	if (board_mmc_bootdev() == 0 && !getenv("firstboot")) {
+#ifdef CONFIG_LOADCMD_CH0
+		setenv("bloader", CONFIG_LOADCMD_CH0);
+#endif
+#ifdef CONFIG_BOOTCMD_CH0
+		setenv("bootcmd", CONFIG_BOOTCMD_CH0);
+#endif
+		setenv("firstboot", "0");
+		saveenv();
+	}
 
 #if defined(CONFIG_RECOVERY_BOOT)
     if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
@@ -402,13 +438,15 @@ int board_late_init(void)
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
+
     writel((-1UL), SCR_RESET_SIG_RESET);
 #endif /* CONFIG_RECOVERY_BOOT */
 
 #if defined(CONFIG_BAT_CHECK)
 	{
-		int ret =0;
+		int ret = 0;
 		int bat_check_skip = 0;
+
 	    // psw0523 for cts
 	    // bat_check_skip = 1;
 
@@ -418,7 +456,7 @@ int board_late_init(void)
 		ret = power_battery_check(bat_check_skip, NULL);
 #endif
 
-		if(ret == 1)
+		if (ret == 1)
 			auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 	}
 #else /* CONFIG_BAT_CHECK */
@@ -428,7 +466,8 @@ int board_late_init(void)
 #endif
 
 	/* Temp check gpio to update */
-	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+	if (!getenv("autoupdate"))
+		auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 #endif /* CONFIG_BAT_CHECK */
 

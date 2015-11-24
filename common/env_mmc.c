@@ -62,10 +62,22 @@ int env_init(void)
 	return 0;
 }
 
+/* Board specific */
+extern int board_mmc_bootdev(void);
+
+static int get_env_dev(void)
+{
+#ifdef CONFIG_SYS_MMC_ENV_DEV
+	return CONFIG_SYS_MMC_ENV_DEV;
+#else
+	return board_mmc_bootdev();
+#endif
+}
+
 static int init_mmc_for_env(struct mmc *mmc)
 {
 #ifdef CONFIG_SYS_MMC_ENV_PART
-	int dev = CONFIG_SYS_MMC_ENV_DEV;
+	int dev = get_env_dev();
 
 #ifdef CONFIG_SPL_BUILD
 	dev = 0;
@@ -97,7 +109,7 @@ static int init_mmc_for_env(struct mmc *mmc)
 static void fini_mmc_for_env(struct mmc *mmc)
 {
 #ifdef CONFIG_SYS_MMC_ENV_PART
-	int dev = CONFIG_SYS_MMC_ENV_DEV;
+	int dev = get_env_dev();
 
 #ifdef CONFIG_SPL_BUILD
 	dev = 0;
@@ -116,7 +128,7 @@ static inline int write_env(struct mmc *mmc, unsigned long size,
 	blk_start	= ALIGN(offset, mmc->write_bl_len) / mmc->write_bl_len;
 	blk_cnt		= ALIGN(size, mmc->write_bl_len) / mmc->write_bl_len;
 
-	n = mmc->block_dev.block_write(CONFIG_SYS_MMC_ENV_DEV, blk_start,
+	n = mmc->block_dev.block_write(get_env_dev(), blk_start,
 					blk_cnt, (u_char *)buffer);
 
 	return (n == blk_cnt) ? 0 : -1;
@@ -129,7 +141,7 @@ static unsigned char env_flags;
 int saveenv(void)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(env_t, env_new, 1);
-	struct mmc *mmc = find_mmc_device(CONFIG_SYS_MMC_ENV_DEV);
+	struct mmc *mmc = find_mmc_device(get_env_dev());
 	u32	offset;
 	int	ret, copy = 0;
 
@@ -153,7 +165,7 @@ int saveenv(void)
 	}
 
 	printf("Writing to %sMMC(%d)... ", copy ? "redundant " : "",
-	       CONFIG_SYS_MMC_ENV_DEV);
+	       get_env_dev());
 	if (write_env(mmc, CONFIG_ENV_SIZE, offset, (u_char *)env_new)) {
 		puts("failed\n");
 		ret = 1;
@@ -177,7 +189,7 @@ static inline int read_env(struct mmc *mmc, unsigned long size,
 			   unsigned long offset, const void *buffer)
 {
 	uint blk_start, blk_cnt, n;
-	int dev = CONFIG_SYS_MMC_ENV_DEV;
+	int dev = get_env_dev();
 
 #ifdef CONFIG_SPL_BUILD
 	dev = 0;
@@ -201,7 +213,7 @@ void env_relocate_spec(void)
 	int crc1_ok = 0, crc2_ok = 0;
 	env_t *ep;
 	int ret;
-	int dev = CONFIG_SYS_MMC_ENV_DEV;
+	int dev = get_env_dev();
 
 	ALLOC_CACHE_ALIGN_BUFFER(env_t, tmp_env1, 1);
 	ALLOC_CACHE_ALIGN_BUFFER(env_t, tmp_env2, 1);
@@ -285,7 +297,7 @@ void env_relocate_spec(void)
 	struct mmc *mmc;
 	u32 offset;
 	int ret;
-	int dev = CONFIG_SYS_MMC_ENV_DEV;
+	int dev = get_env_dev();
 
 #ifdef CONFIG_SPL_BUILD
 	dev = 0;

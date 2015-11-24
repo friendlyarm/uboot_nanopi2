@@ -104,6 +104,7 @@
 #define CONFIG_CMD_SAVEENV  /* saveenv          */
 #define CONFIG_CMD_SOURCE   /* "source" command support */
 #define CONFIG_CMD_BOOTD	/* "boot" command support */
+#define CONFIG_CMD_MEMTEST  /* "mtest" command support */
 
 /*-----------------------------------------------------------------------
  *	U-Boot Environments
@@ -118,7 +119,12 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_LOADCMD_CH0	"ext4load mmc 0:1"
+#define CONFIG_LOADCMD_CH2	"ext4load mmc 2:1"
+#define CONFIG_LOADCOMMAND	CONFIG_LOADCMD_CH2
+
+#define CONFIG_BOOTCMD_CH2	"ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND	"$bloader 0x48000000 uImage;$bloader 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -510,7 +516,6 @@
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
 	#define CONFIG_ENV_SIZE           	32*1024					/* N block size (512Byte Per Block)  */
 	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 	/* avoid bad block */
-	#define CONFIG_SYS_MMC_ENV_DEV  	CONFIG_SYS_MMC_BOOT_DEV
 	#endif
 #endif
 
@@ -576,15 +581,17 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
+#define FASTBOOT_DEV_DEFAULT				1
+
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=mmc,2:2ndboot:2nd:0x200,0x4000;"	\
-			"flash=mmc,2:bootloader:boot:0x8000,0x70000;"	\
-			"flash=mmc,2:boot:ext4:0x00100000,0x04000000;"		\
-			"flash=mmc,2:system:ext4:0x04100000,0x28E00000;"	\
-			"flash=mmc,2:cache:ext4:0x2CF00000,0x21000000;"		\
-			"flash=mmc,2:misc:emmc:0x4E000000,0x00800000;"		\
-			"flash=mmc,2:recovery:emmc:0x4E900000,0x01600000;"	\
-			"flash=mmc,2:userdata:ext4:0x50000000,0x0;"
+			"2ndboot:2nd:0x200,0x4000;"	\
+			"bootloader:boot:0x8000,0x70000;"	\
+			"boot:ext4:0x00100000,0x04000000;"		\
+			"system:ext4:0x04100000,0x02F200000;"	\
+			"cache:ext4:0x33300000,0x1AC00000;"		\
+			"misc:emmc:0x4E000000,0x00800000;"		\
+			"recovery:emmc:0x4E900000,0x01600000;"	\
+			"userdata:ext4:0x50000000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------
@@ -610,14 +617,14 @@
 	/* Logo command: board.c */
 	#if defined(CONFIG_LOGO_DEVICE_NAND)
 	/* From NAND */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 2:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 2:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 2:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS "$bloader 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "$bloader 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "$bloader 0x47000000 update.bmp; drawbmp 0x47000000"
 	#else
 	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 2:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 2:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 2:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS "$bloader 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "$bloader 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "$bloader 0x47000000 update.bmp; drawbmp 0x47000000"
 	#endif
 #endif
 
@@ -627,7 +634,7 @@
  */
 #define	CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#define CONFIG_CMD_RECOVERY_BOOT "$bloader 0x48000000 uImage;$bloader 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 /*-----------------------------------------------------------------------
