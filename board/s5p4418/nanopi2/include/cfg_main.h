@@ -23,13 +23,13 @@
 //------------------------------------------------------------------------------
 // PLL input crystal
 //------------------------------------------------------------------------------
-#define	CFG_SYS_PLLFIN		24000000UL
+#define CFG_SYS_PLLFIN		24000000UL
 
 /*------------------------------------------------------------------------------
  * 	System Name
  */
-#define	CFG_SYS_CPU_NAME						"s5p4418"
-#define	CFG_SYS_BOARD_NAME						"s5p4418-nanopi2"
+#define CFG_SYS_CPU_NAME                        "s5p4418"
+#define CFG_SYS_BOARD_NAME                      "s5p4418-nanopi2"
 
 /*------------------------------------------------------------------------------
  * 	BUS config
@@ -51,25 +51,25 @@
 #define CFG_UART_DEBUG_CH						0
 #define CFG_UART_DEBUG_BAUDRATE					115200
 #define CFG_UART_DEBUG_USE_UART					CTRUE
-#define	CFG_UART_CLKGEN_CLOCK_HZ				50000000	// 50000000
+#define CFG_UART_CLKGEN_CLOCK_HZ				50000000	// 50000000
 
 /*------------------------------------------------------------------------------
  * 	Timer List
  */
-#define	CFG_TIMER_SYS_TICK_CH					0
+#define CFG_TIMER_SYS_TICK_CH					0
 
 /*------------------------------------------------------------------------------
  * 	Extern Ethernet
  */
-#define CFG_ETHER_EXT_PHY_BASEADDR          	0x04000000	// DM9000: CS1
-#define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
+#define CFG_ETHER_EXT_PHY_BASEADDR				0x04000000	// DM9000: CS1
+#define CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
 /* MTD */
-#define CFG_NAND_ECC_BYTES 						1024
-#define CFG_NAND_ECC_BITS               		40			/* 512 - 4,8,16,24 1024 - 24,40,60 */
+#define CFG_NAND_ECC_BYTES						1024
+#define CFG_NAND_ECC_BITS						40			/* 512 - 4,8,16,24 1024 - 24,40,60 */
 //#define CFG_NAND_ECCIRQ_MODE
 
 /* FTL */
@@ -131,25 +131,25 @@
 /*------------------------------------------------------------------------------
  * 	LVDS
  */
-#define CFG_DISP_LVDS_LCD_FORMAT             	LVDS_LCDFORMAT_VESA
+#define CFG_DISP_LVDS_LCD_FORMAT                LVDS_LCDFORMAT_VESA
 
 /*------------------------------------------------------------------------------
  *  SPI
  */
-#define CFG_SPI0_SRC_CLK                            100*1000*1000
-#define CFG_SPI0_OUT_CLK                            20*1000*1000
+#define CFG_SPI0_SRC_CLK                        100*1000*1000
+#define CFG_SPI0_OUT_CLK                        20*1000*1000
 
-#define CFG_SPI1_SRC_CLK                            100*1000*1000
-#define CFG_SPI1_OUT_CLK                            30*1000*1000
+#define CFG_SPI1_SRC_CLK                        100*1000*1000
+#define CFG_SPI1_OUT_CLK                        30*1000*1000
 
-#define CFG_SPI2_SRC_CLK                            100*1000*1000
-#define CFG_SPI2_OUT_CLK                            30*1000*1000
+#define CFG_SPI2_SRC_CLK                        100*1000*1000
+#define CFG_SPI2_OUT_CLK                        30*1000*1000
 
 
 /*------------------------------------------------------------------------------
  * 	TIMER/PWM
  */
-#define CFG_LCD_PRI_PWM_CH                      0
+//#define CFG_LCD_PRI_PWM_CH                      0
 #define CFG_LCD_PRI_PWM_FREQ                    1000
 #define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
 
