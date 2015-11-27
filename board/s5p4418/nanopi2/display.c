@@ -24,6 +24,7 @@
 #include <common.h>
 #include <asm/arch/mach-api.h>
 #include <asm/arch/display.h>
+#include <nxp-fb.h>
 
 #define	INIT_VIDEO_SYNC(name)								\
 	struct disp_vsync_info name = {							\
@@ -79,38 +80,97 @@
 		.lcd_mpu_type	= 0,								\
 	};
 
+static void nxp_platform_disp_init(struct nxp_lcd *lcd,
+		struct disp_vsync_info *vsync,
+		struct disp_syncgen_param *syncgen,
+		struct disp_multily_param *multily)
+{
+	struct nxp_lcd_timing *timing;
+	u32 clk = 800000000;
+	u32 div;
+
+	if (lcd) {
+		timing = &lcd->timing;
+
+		vsync->h_active_len	= lcd->width;
+		vsync->h_sync_width	= timing->h_sw;
+		vsync->h_back_porch	= timing->h_bp;
+		vsync->h_front_porch	= timing->h_fp;
+		vsync->h_sync_invert	= !lcd->polarity.inv_hsync;
+
+		vsync->v_active_len	= lcd->height;
+		vsync->v_sync_width	= timing->v_sw;
+		vsync->v_back_porch	= timing->v_bp;
+		vsync->v_front_porch	= timing->v_fp;
+		vsync->v_sync_invert	= !lcd->polarity.inv_vsync;
+
+		/* calculates pixel clock */
+		div  = timing->h_sw + timing->h_bp + timing->h_fp + lcd->width;
+		div *= timing->v_sw + timing->v_bp + timing->v_fp + lcd->height;
+		div *= lcd->freq ? : 60;
+		clk /= div;
+
+		vsync->pixel_clock_hz= div;
+		vsync->clk_src_lv0	= CFG_DISP_PRI_CLKGEN0_SOURCE;
+		vsync->clk_div_lv0	= clk;
+		vsync->clk_src_lv1	= CFG_DISP_PRI_CLKGEN1_SOURCE;
+		vsync->clk_div_lv1	= CFG_DISP_PRI_CLKGEN1_DIV;
+		//vsync->clk_out_inv	= lcd->polarity.rise_vclk;
+
+		if (lcd->gpio_init)
+			lcd->gpio_init();
+
+		multily->x_resol = lcd->width;
+		multily->y_resol = lcd->height;
+	}
+}
+
 static void bd_disp_rgb(void)
 {
 #if defined(CONFIG_DISPLAY_OUT_RGB)
+	struct nxp_lcd *lcd = nanopi2_get_lcd();
+
 	INIT_VIDEO_SYNC(vsync);
 	INIT_PARAM_SYNCGEN(syncgen);
 	INIT_PARAM_MULTILY(multily);
 	INIT_PARAM_RGB(rgb);
 
+	nxp_platform_disp_init(lcd, &vsync, &syncgen, &multily);
+
 	display_rgb(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
 			&vsync, &syncgen, &multily, &rgb);
 	mdelay(50);
+
+	printf("DISP: W=%4d, H=%4d, Bpp=%d\n", lcd->width, lcd->height,
+			CFG_DISP_PRI_SCREEN_PIXEL_BYTE*8);
 #endif
 }
 
 static void bd_disp_hdmi(void)
 {
 #if defined(CONFIG_DISPLAY_OUT_HDMI)
+	struct nxp_lcd *lcd = nanopi2_get_lcd();
+	int width = CFG_DISP_PRI_RESOL_WIDTH;
+	int height = CFG_DISP_PRI_RESOL_HEIGHT;
 	int preset = 0;
 
 	INIT_VIDEO_SYNC(vsync);
 	INIT_PARAM_SYNCGEN(syncgen);
 	INIT_PARAM_MULTILY(multily);
 
+	nxp_platform_disp_init(lcd, &vsync, &syncgen, &multily);
+	width = lcd->width;
+	height = lcd->height;
+
 #define IS_720P(w, h)	((w) == 1280 && (h) ==  720)
 #define IS_1080P(w, h)	((w) == 1920 && (h) == 1080)
 
-	if (IS_720P(CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT))
+	if (IS_720P(width, height))
 		preset = 0;
-	else if (IS_1080P(CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT))
+	else if (IS_1080P(width, height))
 		preset = 1;
 	else
-		printf("hdmi not support %dx%d\n", CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT);
+		printf("hdmi not support %dx%d\n", width, height);
 
 	display_hdmi(CFG_DISP_OUTPUT_MODOLE, preset, CONFIG_FB_ADDR,
 			&vsync, &syncgen, &multily);
@@ -119,14 +179,17 @@ static void bd_disp_hdmi(void)
 
 int bd_display(void)
 {
-#if defined(CONFIG_DISPLAY_OUT_RGB)
-	bd_disp_rgb();
-#elif defined(CONFIG_DISPLAY_OUT_HDMI)
-	bd_disp_hdmi();
-#endif
+	const char *name = nanopi2_get_lcd_name();
 
-	printf("DISP: W=%4d, H=%4d, Bpp=%d\n",
-			CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT,
-			CFG_DISP_PRI_SCREEN_PIXEL_BYTE*8);
+	if (strncmp(name, "HDMI", 4) != 0) {
+#if defined(CONFIG_DISPLAY_OUT_RGB)
+		bd_disp_rgb();
+#endif
+	} else {
+#if defined(CONFIG_DISPLAY_OUT_HDMI)
+		bd_disp_hdmi();
+#endif
+	}
+
 	return 0;
 }
