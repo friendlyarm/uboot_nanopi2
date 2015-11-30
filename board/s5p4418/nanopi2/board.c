@@ -373,14 +373,14 @@ static void bd_update_env(void)
 	char *lcddpi = getenv("lcddpi");
 	char *bootargs = getenv("bootargs");
 	const char *name;
-	char *p;
+	char *p = NULL;
 
 #define CMDLINE_LCD		" lcd="
 	char cmdline[CONFIG_SYS_CBSIZE];
 	int n = 1;
 
 	if (lcdtype) {
-		/* User specified LCD by env, let's setup it again */
+		/* Setup again as user specified LCD in env */
 		nanopi2_setup_lcd_by_name(lcdtype);
 	}
 
@@ -403,7 +403,6 @@ static void bd_update_env(void)
 			p += strlen(CMDLINE_LCD);
 		}
 		strncpy(cmdline, bootargs, n);
-		bootargs = p;
 	}
 
 	/* add `lcd=NAME,NUMdpi' */
@@ -424,16 +423,14 @@ static void bd_update_env(void)
 	}
 
 	/* copy remaining of bootargs */
-	if (bootargs) {
-		p = strstr(bootargs, " ");
+	if (p) {
+		p = strstr(p, " ");
 		if (p) {
 			strcpy(cmdline + n, p);
 		}
 	}
 
 	/* finally, let's update uboot env & save it */
-	setenv("bootargs", cmdline);
-
 	if (!strncmp(name, "HDMI", 4)) {
 		char image[32];
 		sprintf(image, "%s.hdmi", CONFIG_KERNELIMAGE);
@@ -443,7 +440,10 @@ static void bd_update_env(void)
 		setenv("kernel", CONFIG_KERNELIMAGE);
 	}
 
-	saveenv();
+	if (bootargs && strncmp(cmdline, bootargs, sizeof(cmdline))) {
+		setenv("bootargs", cmdline);
+		saveenv();
+	}
 }
 
 /* call from u-boot */
