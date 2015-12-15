@@ -23,13 +23,13 @@
 //------------------------------------------------------------------------------
 // PLL input crystal
 //------------------------------------------------------------------------------
-#define	CFG_SYS_PLLFIN		24000000UL
+#define CFG_SYS_PLLFIN		24000000UL
 
 /*------------------------------------------------------------------------------
  * 	System Name
  */
-#define	CFG_SYS_CPU_NAME						"s5p6818"
-#define	CFG_SYS_BOARD_NAME						"s5p6818-dronel"
+#define CFG_SYS_CPU_NAME						"s5p6818"
+#define CFG_SYS_BOARD_NAME						"s5p6818-nanopi3"
 
 /*------------------------------------------------------------------------------
  * 	Debug Uart
@@ -37,18 +37,18 @@
 #define CFG_UART_DEBUG_CH						0
 #define CFG_UART_DEBUG_BAUDRATE					115200
 #define CFG_UART_DEBUG_USE_UART					CTRUE
-#define	CFG_UART_CLKGEN_CLOCK_HZ				50000000	// 50000000
+#define CFG_UART_CLKGEN_CLOCK_HZ				50000000	// 50000000
 
 /*------------------------------------------------------------------------------
  * 	Timer List
  */
-#define	CFG_TIMER_SYS_TICK_CH					0
+#define CFG_TIMER_SYS_TICK_CH					0
 
 /*------------------------------------------------------------------------------
  * 	Extern Ethernet
  */
 #define CFG_ETHER_EXT_PHY_BASEADDR          	0x04000000	// DM9000: CS1
-#define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
+#define CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
  * 	Nand (HWECC)
@@ -69,44 +69,44 @@
 /*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)
  */
-#define CFG_DISP_OUTPUT_MODOLE           	0	// 0 : Primary, 1 : Secondary
+#define CFG_DISP_OUTPUT_MODOLE                  0	// 0 : Primary, 1 : Secondary
 
 #define CFG_DISP_PRI_SCREEN_LAYER               0
 #define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8R8G8B8
-#define CFG_DISP_PRI_SCREEN_PIXEL_BYTE	        4
-#define CFG_DISP_PRI_SCREEN_COLOR_KEY	        0x090909
+#define CFG_DISP_PRI_SCREEN_PIXEL_BYTE          4
+#define CFG_DISP_PRI_SCREEN_COLOR_KEY           0x090909
 
-#define CFG_DISP_PRI_VIDEO_PRIORITY		2	// 0, 1, 2, 3
-#define CFG_DISP_PRI_BACK_GROUND_COLOR	     	0x000000
+#define CFG_DISP_PRI_VIDEO_PRIORITY             2	// 0, 1, 2, 3
+#define CFG_DISP_PRI_BACK_GROUND_COLOR          0x000000
 
 #define CFG_DISP_PRI_MLC_INTERLACE              CFALSE
 
-#define CFG_DISP_PRI_RESOL_WIDTH          	1024	// X Resolution
-#define CFG_DISP_PRI_RESOL_HEIGHT		600	// Y Resolution
+#define CFG_DISP_PRI_RESOL_WIDTH                1280	// X Resolution
+#define CFG_DISP_PRI_RESOL_HEIGHT                800	// Y Resolution
 
-#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           20
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH           160
-#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          160
+#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           30
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH           16
+#define CFG_DISP_PRI_HSYNC_FRONT_PORCH          16
 #define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CTRUE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           3
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH           23
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
+#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           12
+#define CFG_DISP_PRI_VSYNC_BACK_PORCH           8
+#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          8
+#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH          CTRUE
 
-#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
-#define CFG_DISP_PRI_CLKGEN0_DIV                14 //20
+#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
+#define CFG_DISP_PRI_CLKGEN0_DIV                11
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
-#define CFG_DISP_PRI_CLKGEN0_INVERT				0
+#define CFG_DISP_PRI_CLKGEN0_INVERT             1
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
 #define CFG_DISP_PRI_CLKGEN1_DIV                1
 #define CFG_DISP_PRI_CLKGEN1_DELAY              0
-#define CFG_DISP_PRI_CLKGEN1_INVERT		0
-#define CFG_DISP_PRI_CLKSEL1_SELECT		0
+#define CFG_DISP_PRI_CLKGEN1_INVERT             1
+#define CFG_DISP_PRI_CLKSEL1_SELECT             0
 #define CFG_DISP_PRI_PADCLKSEL                  DPC_PADCLKSEL_VCLK	/* VCLK=CLKGEN1, VCLK12=CLKGEN0 */
 
-#define	CFG_DISP_PRI_PIXEL_CLOCK		800000000/CFG_DISP_PRI_CLKGEN0_DIV
+#define CFG_DISP_PRI_PIXEL_CLOCK                (800000000/CFG_DISP_PRI_CLKGEN0_DIV)
 
-#define	CFG_DISP_PRI_OUT_SWAPRB 		CFALSE
+#define CFG_DISP_PRI_OUT_SWAPRB                 CFALSE
 #define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB666
 #define CFG_DISP_PRI_OUT_YCORDER                DPC_YCORDER_CbYCrY
 #define CFG_DISP_PRI_OUT_INTERLACE              CFALSE
@@ -115,7 +115,7 @@
 /*------------------------------------------------------------------------------
  * 	LVDS
  */
-#define CFG_DISP_LVDS_LCD_FORMAT             	LVDS_LCDFORMAT_VESA
+#define CFG_DISP_LVDS_LCD_FORMAT                LVDS_LCDFORMAT_VESA
 
 /*------------------------------------------------------------------------------
  *  SPI
