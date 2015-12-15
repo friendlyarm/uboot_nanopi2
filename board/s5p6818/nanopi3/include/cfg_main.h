@@ -47,14 +47,14 @@
 /*------------------------------------------------------------------------------
  * 	Extern Ethernet
  */
-#define CFG_ETHER_EXT_PHY_BASEADDR          	0x04000000	// DM9000: CS1
+#define CFG_ETHER_EXT_PHY_BASEADDR				0x04000000	// DM9000: CS1
 #define CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
-#define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
-#define CFG_NAND_ECC_BITS                       40
+#define CFG_NAND_ECC_BYTES						1024
+#define CFG_NAND_ECC_BITS						40			/* 512 - 4,8,16,24  1024 - 24,40,60 */
 
 /* FTL */
 #define CFG_NAND_FTL_START_BLOCK				0x6000000	/* byte address, Must Be Multiple of 8MB */
@@ -120,20 +120,20 @@
 /*------------------------------------------------------------------------------
  *  SPI
  */
-#define CFG_SPI0_SRC_CLK                            100*1000*1000
-#define CFG_SPI0_OUT_CLK                            20*1000*1000
+#define CFG_SPI0_SRC_CLK                        100*1000*1000
+#define CFG_SPI0_OUT_CLK                        20*1000*1000
 
-#define CFG_SPI1_SRC_CLK                            100*1000*1000
-#define CFG_SPI1_OUT_CLK                            30*1000*1000
+#define CFG_SPI1_SRC_CLK                        100*1000*1000
+#define CFG_SPI1_OUT_CLK                        30*1000*1000
 
-#define CFG_SPI2_SRC_CLK                            100*1000*1000
-#define CFG_SPI2_OUT_CLK                            30*1000*1000
+#define CFG_SPI2_SRC_CLK                        100*1000*1000
+#define CFG_SPI2_OUT_CLK                        30*1000*1000
 
 
 /*------------------------------------------------------------------------------
  * 	TIMER/PWM
  */
-#define CFG_LCD_PRI_PWM_CH                      0
+//#define CFG_LCD_PRI_PWM_CH                      0
 #define CFG_LCD_PRI_PWM_FREQ                    1000
 #define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
 

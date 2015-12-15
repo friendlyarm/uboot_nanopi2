@@ -34,6 +34,7 @@
 #include <pm.h>
 
 #include <draw_lcd.h>
+#include <onewire.h>
 
 #if defined(CONFIG_PMIC)
 #include <power/pmic.h>
@@ -209,6 +210,21 @@ static void bd_bootdev_init(void)
 	}
 }
 
+static void bd_onewire_init(void)
+{
+	onewire_init();
+	onewire_set_backlight(0);
+}
+
+static void bd_lcd_init(void)
+{
+#if defined(CONFIG_DISPLAY_OUT)
+	/* Clear framebuffer */
+	memset((void *)CONFIG_FB_ADDR, 0,
+		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT * 4);
+#endif
+}
+
 /* call from u-boot */
 int board_early_init_f(void)
 {
@@ -221,11 +237,14 @@ int board_early_init_f(void)
 	nxp_rtc_init();
 #endif
 	bd_bootdev_init();
+	bd_onewire_init();
 	return 0;
 }
 
 int board_init(void)
 {
+	bd_lcd_init();
+
 	DBGOUT("%s : done board init ...\n", CFG_SYS_BOARD_NAME);
 	return 0;
 }
@@ -275,24 +294,31 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
 
+	if (!display_init) {
+		bd_display();
+
+#if defined(CFG_LCD_PRI_PWM_CH)
+		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
+		pwm_config(CFG_LCD_PRI_PWM_CH,
+			TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
+			TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+#endif
+
+		display_init = 1;
+	}
+
 	if (cmd) {
 		run_command(cmd, 0);
 		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
 			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 	}
 
-	if (!display_init) {
-		bd_display();
-		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-		display_init = 1;
-	}
-
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
-
-	if (bl_on)
+	if (bl_on) {
+#if defined(CFG_LCD_PRI_PWM_CH)
 		pwm_enable(CFG_LCD_PRI_PWM_CH);
+#endif
+		onewire_set_backlight(127);
+	}
 }
 
 
@@ -352,6 +378,7 @@ int board_late_init(void)
 #if defined(CONFIG_DISPLAY_OUT)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
+	onewire_set_backlight(127);
 
 	/* Temp check gpio to update */
 	if (!getenv("autoupdate"))
