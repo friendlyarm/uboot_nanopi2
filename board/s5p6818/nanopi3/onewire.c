@@ -92,7 +92,7 @@ static inline void wait_one_tick(void) {
 	__udelay(SAMPLE_IN_US);
 
 	/* extra loop to get 9600 Hz */
-	wait_loops(320);
+	wait_loops(50);
 }
 
 /* Session handler */
@@ -151,7 +151,7 @@ void onewire_init(void)
 {
 	/* See include/cfg_gpio.h */
 	NX_GPIO_SetPadFunction(__IO_GRP, __IO_IDX, NX_GPIO_PADFUNC_1);
-	NX_GPIO_SetPullMode(__IO_GRP, __IO_IDX, NX_GPIO_PULL_OFF);
+	NX_GPIO_SetPullEnable(__IO_GRP, __IO_IDX, NX_GPIO_PULL_OFF);
 }
 
 int onewire_get_info(unsigned char *lcd, unsigned short *fw_ver)
