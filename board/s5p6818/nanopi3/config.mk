@@ -24,7 +24,11 @@
 # =========================================================================
 #	Cross compiler
 # =========================================================================
-CROSS_COMPILE := arm-linux-
+ifneq ($(CONFIG_ARM64), y)
+CROSS_COMPILE ?= arm-linux-
+else
+CROSS_COMPILE ?= aarch64-linux-gnu-
+endif
 
 # Re-check GNU ld after $(TOP)/Makefile:329
 ifeq ($(shell $(CROSS_COMPILE)ld.bfd -v 2> /dev/null),)

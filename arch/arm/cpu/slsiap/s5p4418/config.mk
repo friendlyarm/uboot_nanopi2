@@ -21,7 +21,7 @@
 # MA 02111-1307 USA
 #
 
-PLATFORM_RELFLAGS += -mcpu=cortex-a9
+PLATFORM_CPPFLAGS += -mcpu=cortex-a9
 
 # remove "uses variable-size enums yet the output is to use 32-bit enums..."
 PLATFORM_RELFLAGS += -fno-short-enums -fstrict-aliasing

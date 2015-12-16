@@ -517,7 +517,6 @@ else
 
 endif # $(dot-config)
 
-KBUILD_CFLAGS += $(call cc-option, -mcpu=cortex-a9)	# Add by jhkim for AARCH64
 KBUILD_CFLAGS += -Os #-fomit-frame-pointer
 
 ifdef BUILD_TAG

@@ -12,6 +12,13 @@ LDPPFLAGS += -DSDIR=$(SDIR) -DCDIR=$(CDIR)
 #
 PLATFORM_LIBS :=
 
+# Cross compiler
+ifneq ($(CONFIG_ARM64), y)
+CROSS_COMPILE := arm-linux-
+else
+CROSS_COMPILE := aarch64-linux-gnu-
+endif
+
 GCCMACHINE =  $(shell $(CC) -dumpmachine | cut -f1 -d-)
 GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
 

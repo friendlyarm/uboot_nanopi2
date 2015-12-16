@@ -28,21 +28,14 @@ PLATFORM_RELFLAGS += -fno-short-enums -fstrict-aliasing -Wno-unused-but-set-vari
 # supported by more tool-chains
 PF_CPPFLAGS_ARMV8 := $(call cc-option, -march=armv8-a)
 
-GCCMACHINE =  $(shell $(CC) -dumpmachine | cut -f1 -d-)
-GCCVERSION =  $(shell $(CC) -dumpversion | cut -f2 -d.)
-
-ifeq  "$(GCCMACHINE)" "arm"
-ifneq "$(GCCVERSION)" "8"
-PLATFORM_CPPFLAGS += $(PF_CPPFLAGS_ARMV8)
-endif
-endif   # ifeq "$(GCCMACHINE)" "arm"
-
 ifeq ($(CONFIG_ARM64), y)
 PLATFORM_RELFLAGS += -ffixed-x18 -march=armv8-a -mstrict-align -Wint-to-pointer-cast
+PLATFORM_RELFLAGS += $(call cc-option, -mtune=cortex-a53)
 # to link R_AARCH64_ABS64 field, remove "-pie"
 LDFLAGS_u-boot :=
+else
+PLATFORM_CPPFLAGS += -mcpu=cortex-a9
 endif
-
 
 # =========================================================================
 #
