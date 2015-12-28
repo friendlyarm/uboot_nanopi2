@@ -116,6 +116,7 @@ static struct nxp_lcd wvga_s70d = {
 		.inv_vsync = 1,
 		.inv_vden = 0,
 	},
+	.gpio_init = s70_gpio_init,
 };
 
 static struct nxp_lcd wvga_w50 = {
@@ -301,6 +302,58 @@ static struct nxp_lcd wxga_hd101 = {
 	.gpio_init = hd101_gpio_init,
 };
 
+static struct nxp_lcd hvga_p43 = {
+	.width = 480,
+	.height = 272,
+	.p_width = 96,
+	.p_height = 54,
+	.bpp = 32,
+	.freq = 65,
+
+	.timing = {
+		.h_fp =  5,
+		.h_bp = 40,
+		.h_sw =  2,
+		.v_fp =  8,
+		.v_fpe = 1,
+		.v_bp =  9,
+		.v_bpe = 1,
+		.v_sw =  2,
+	},
+	.polarity = {
+		.rise_vclk = 1,
+		.inv_hsync = 1,
+		.inv_vsync = 1,
+		.inv_vden = 0,
+	},
+};
+
+static struct nxp_lcd qvga_w35 = {
+	.width= 320,
+	.height = 240,
+	.p_width = 70,
+	.p_height = 52,
+	.bpp = 16,
+	.freq = 65,
+
+	.timing = {
+		.h_fp =  4,
+		.h_bp = 70,
+		.h_sw =  4,
+		.v_fp =  4,
+		.v_fpe = 1,
+		.v_bp = 12,
+		.v_bpe = 1,
+		.v_sw =  4,
+	},
+	.polarity = {
+		.rise_vclk = 1,
+		.inv_hsync = 0,
+		.inv_vsync = 0,
+		.inv_vden = 0,
+	},
+};
+
 /* HDMI */
 static struct nxp_lcd hdmi_def = {
 	.width = 1920,
@@ -376,9 +429,11 @@ static struct {
 	{  18, "HD700",	&wxga_hd700, 213, 1 },
 	{   3, "S70",	&wvga_s70,   128, 1 },
 	{  24, "S702",	&wvga_s70,   128, 3 },
+	{  26, "S70D",	&wvga_s70d,  128, 0 },
+	{  19, "P43",	&hvga_p43,     0, 0 },
+	{   8, "W35",	&qvga_w35,     0, 0 },
 
 	/* TODO: Testing */
-	{  26, "S70D",	&wvga_s70d,  128, 0 },
 	{   4, "W50",	&wvga_w50,     0, 0 },
 	{  15, "W101",	&wsvga_w101,   0, 1 },
 	{   5, "L80",	&vga_l80,      0, 1 },
