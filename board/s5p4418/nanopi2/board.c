@@ -427,7 +427,14 @@ static void bd_update_env(void)
 		p = strstr(p, " ");
 		if (p) {
 			strcpy(cmdline + n, p);
+			n += strlen(p);
 		}
+	}
+
+	/* append `bootdev=2' */
+#define CMDLINE_BDEV	" bootdev="
+	if (board_mmc_bootdev() == 2 && !strstr(cmdline, CMDLINE_BDEV)) {
+		n += sprintf(cmdline + n, "%s2", CMDLINE_BDEV);
 	}
 
 	/* finally, let's update uboot env & save it */
