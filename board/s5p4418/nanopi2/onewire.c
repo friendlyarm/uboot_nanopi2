@@ -88,11 +88,23 @@ static void wait_loops(int n) {
 	asm volatile("" : : : "memory");
 }
 
+/* extra loops to get 9600 Hz */
+static int loops = 320;
+
 static inline void wait_one_tick(void) {
 	__udelay(SAMPLE_IN_US);
 
-	/* extra loop to get 9600 Hz */
-	wait_loops(320);
+	wait_loops(loops);
+}
+
+static void onewire_init_loops(void) {
+	struct clk *fclk = NULL;
+
+	fclk = clk_get(NULL, CORECLK_NAME_FCLK);
+	if (fclk) {
+		if (clk_get_rate(fclk) == 800000000)
+			loops = 52;
+	}
 }
 
 /* Session handler */
@@ -152,6 +164,8 @@ void onewire_init(void)
 	/* See include/cfg_gpio.h */
 	NX_GPIO_SetPadFunction(__IO_GRP, __IO_IDX, NX_GPIO_PADFUNC_1);
 	NX_GPIO_SetPullMode(__IO_GRP, __IO_IDX, NX_GPIO_PULL_OFF);
+
+	onewire_init_loops();
 }
 
 int onewire_get_info(unsigned char *lcd, unsigned short *fw_ver)
