@@ -136,8 +136,9 @@
 #define CONFIG_LOADCMD_CH2	"ext4load mmc 2:1"
 #define CONFIG_LOADCOMMAND	CONFIG_LOADCMD_CH2
 
-#define CONFIG_BOOTCMD_CH2	"ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
-#define CONFIG_BOOTCOMMAND	"$bloader 0x48000000 uImage;$bloader 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_KERNELIMAGE	"uImage"
+#define CONFIG_BOOTCMD_CH2	"ext4load mmc 2:1 0x48000000 $kernel;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND	"$bloader 0x48000000 $kernel;$bloader 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -662,6 +663,7 @@
 	#define CONFIG_PWM			/* backlight */
 	/* display out device */
 	#define CONFIG_DISPLAY_OUT_RGB
+	#define CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
@@ -687,7 +689,7 @@
  */
 #define CONFIG_RECOVERY_BOOT
 #if defined (CONFIG_RECOVERY_BOOT)
-	#define CONFIG_CMD_RECOVERY_BOOT "$bloader 0x48000000 uImage;$bloader 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+	#define CONFIG_CMD_RECOVERY_BOOT "$bloader 0x48000000 $kernel;$bloader 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 /*-----------------------------------------------------------------------

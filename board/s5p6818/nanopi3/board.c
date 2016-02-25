@@ -35,6 +35,7 @@
 
 #include <draw_lcd.h>
 #include <onewire.h>
+#include <nxp-fb.h>
 
 #if defined(CONFIG_PMIC)
 #include <power/pmic.h>
@@ -212,17 +213,125 @@ static void bd_bootdev_init(void)
 
 static void bd_onewire_init(void)
 {
+	unsigned char lcd;
+	unsigned short fw_ver;
+
 	onewire_init();
 	onewire_set_backlight(0);
+	onewire_get_info(&lcd, &fw_ver);
 }
 
 static void bd_lcd_init(void)
 {
+	struct nxp_lcd *cfg;
+	int myid;
+	int width, height;
+	int ret;
+
+	myid = onewire_get_lcd_id();
+	/* -1: onwire probe failed
+	 *  0: bad
+	 * >0: identified */
+
+	ret = nanopi2_setup_lcd_by_id(myid);
+	if (myid <= 0 || ret != myid) {
+		printf("LCD  = N/A (%d)\n", myid);
+		nanopi2_setup_lcd_by_name("HDMI720P60");
+
+		/* May be setup to 1080P in bd_update_env() */
+		width = 1920;
+		height = 1080;
+	} else {
+		printf("LCD  = %s\n", nanopi2_get_lcd_name());
+
+		cfg = nanopi2_get_lcd();
+		width  = cfg->width;
+		height = cfg->height;
+	}
+
 #if defined(CONFIG_DISPLAY_OUT)
 	/* Clear framebuffer */
-	memset((void *)CONFIG_FB_ADDR, 0,
-		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT * 4);
+	memset((void *)CONFIG_FB_ADDR, 0, width * height * 4);
 #endif
+}
+
+static void bd_update_env(void)
+{
+	char *lcdtype = getenv("lcdtype");
+	char *lcddpi = getenv("lcddpi");
+	char *bootargs = getenv("bootargs");
+	const char *name;
+	char *p = NULL;
+
+#define CMDLINE_LCD		" lcd="
+	char cmdline[CONFIG_SYS_CBSIZE];
+	int n = 1;
+
+	if (lcdtype) {
+		/* Setup again as user specified LCD in env */
+		nanopi2_setup_lcd_by_name(lcdtype);
+	}
+
+	name = nanopi2_get_lcd_name();
+
+	if (bootargs)
+		n = strlen(bootargs);	/* isn't 0 for NULL */
+	else
+		cmdline[0] = '\0';
+
+	if ((n + strlen(name) + sizeof(CMDLINE_LCD)) > sizeof(cmdline)) {
+		printf("Error: `bootargs' is too large (%d)\n", n);
+		return;
+	}
+
+	if (bootargs) {
+		p = strstr(bootargs, CMDLINE_LCD);
+		if (p) {
+			n = (p - bootargs);
+			p += strlen(CMDLINE_LCD);
+		}
+		strncpy(cmdline, bootargs, n);
+	}
+
+	/* add `lcd=NAME,NUMdpi' */
+	strncpy(cmdline + n, CMDLINE_LCD, strlen(CMDLINE_LCD));
+	n += strlen(CMDLINE_LCD);
+
+	strcpy(cmdline + n, name);
+	n += strlen(name);
+
+	if (lcddpi) {
+		n += sprintf(cmdline + n, ",%sdpi", lcddpi);
+	} else {
+		int dpi = nanopi2_get_lcd_density();
+
+		if (dpi > 0 && dpi < 600) {
+			n += sprintf(cmdline + n, ",%ddpi", dpi);
+		}
+	}
+
+	/* copy remaining of bootargs */
+	if (p) {
+		p = strstr(p, " ");
+		if (p) {
+			strcpy(cmdline + n, p);
+		}
+	}
+
+	/* finally, let's update uboot env & save it */
+	if (!strncmp(name, "HDMI", 4)) {
+		char image[32];
+		sprintf(image, "%s.hdmi", CONFIG_KERNELIMAGE);
+
+		setenv("kernel", image);
+	} else {
+		setenv("kernel", CONFIG_KERNELIMAGE);
+	}
+
+	if (bootargs && strncmp(cmdline, bootargs, sizeof(cmdline))) {
+		setenv("bootargs", cmdline);
+		saveenv();
+	}
 }
 
 /* call from u-boot */
@@ -308,9 +417,11 @@ void bd_display_run(char *cmd, int bl_duty, int bl_on)
 	}
 
 	if (cmd) {
+		struct nxp_lcd *lcd = nanopi2_get_lcd();
+
 		run_command(cmd, 0);
-		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+		lcd_draw_boot_logo(CONFIG_FB_ADDR, lcd->width, lcd->height,
+			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 	}
 
 	if (bl_on) {
@@ -344,7 +455,9 @@ int board_late_init(void)
 		saveenv();
 	}
 
-#if defined CONFIG_RECOVERY_BOOT
+	bd_update_env();
+
+#if defined(CONFIG_RECOVERY_BOOT)
     if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
