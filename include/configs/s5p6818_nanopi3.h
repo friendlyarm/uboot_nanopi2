@@ -211,7 +211,7 @@
 
 		#if defined(CONFIG_PHY_REALTEK)
 			#define CONFIG_ETHPRIME				"RTL8211"
-			#define CONFIG_PHY_ADDR				3           /* RTL8211 PHY address */
+			#define CONFIG_PHY_ADDR				7           /* RTL8211 PHY address */
 		#endif
 		#if defined(CONFIG_PHY_MICREL)
 			#define CONFIG_ETHPRIME				"KSZ9031"

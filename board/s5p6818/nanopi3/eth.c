@@ -28,14 +28,36 @@
 #include <net.h>
 
 #ifdef CONFIG_CMD_NET
+
+#if defined(CONFIG_DESIGNWARE_ETH)
+#include <phy.h>
+
+int board_phy_config(struct phy_device *phydev)
+{
+	if (phydev->drv->config)
+		phydev->drv->config(phydev);
+	return 0;
+}
+#endif
+
 int board_eth_init(bd_t *bis)
 {
-#ifdef	CONFIG_DRIVER_DM9000
+#if defined(CONFIG_DESIGNWARE_ETH)
+	u32 interface = PHY_INTERFACE_MODE_RGMII;
+	int num = 0;
+
+	if (designware_initialize(CONFIG_DWCGMAC_BASE, interface) >= 0)
+		num++;
+
+	return num;
+#elif defined(CONFIG_DRIVER_DM9000)
 	dm9000_initialize(bis);
 	return eth_init(bis);
-#else	// CONFIG_DRIVER_DM9000
+#else
+	/* Unknown ethernet PHY/driver */
 	return -1;
 #endif
 }
+
 #endif	/* CONFIG_CMD_NET */
 
