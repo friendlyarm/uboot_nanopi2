@@ -638,7 +638,7 @@
 #define FASTBOOT_DEV_DEFAULT				1
 
 #define FASTBOOT_PARTS_DEFAULT		\
-			"2ndboot:2nd:0x200,0x4000;"	\
+			"2ndboot:2nd:0x200,0x7A00;"	\
 			"bootloader:boot:0x8000,0x70000;"	\
 			"boot:ext4:0x00100000,0x04000000;"		\
 			"system:ext4:0x04100000,0x02F200000;"	\
