@@ -65,6 +65,33 @@ static struct nxp_lcd wxga_hd700 = {
 	},
 };
 
+static struct nxp_lcd wxga_hd701 = {
+	.width = 800,
+	.height = 1280,
+	.p_width = 94,
+	.p_height = 151,
+	.bpp = 24,
+	.freq = 60,
+
+	.timing = {
+		.h_fp = 20,
+		.h_bp = 20,
+		.h_sw = 24,
+		.v_fp =  4,
+		.v_fpe = 1,
+		.v_bp =  4,
+		.v_bpe = 1,
+		.v_sw =  8,
+	},
+	.polarity = {
+		.rise_vclk = 1,
+		.inv_hsync = 0,
+		.inv_vsync = 0,
+		.inv_vden = 0,
+	},
+	.gpio_init = hd101_gpio_init,
+};
+
 static struct nxp_lcd wvga_s70 = {
 	.width = 800,
 	.height = 480,
@@ -454,6 +481,7 @@ static struct {
 } nanopi2_lcd_config[] = {
 	{  25, "HD101",	&wxga_hd101,   0, 1 },
 	{  18, "HD700",	&wxga_hd700, 213, 1 },
+	{  30, "HD701",	&wxga_hd701, 213, 1 },
 	{   3, "S70",	&wvga_s70,   128, 1 },
 	{  24, "S702",	&wvga_s70,   128, 3 },
 	{  26, "S70D",	&wvga_s70d,  128, 0 },
