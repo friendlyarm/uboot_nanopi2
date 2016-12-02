@@ -36,6 +36,13 @@ static void hd101_gpio_init(void)
 	NX_GPIO_SetDriveStrength(PAD_GPIO_A, 27, 2);
 }
 
+static void s430_gpio_init(void)
+{
+	int  i;
+
+	for (i = 0; i < 28; i++)
+		NX_GPIO_SetDriveStrength(PAD_GPIO_A, i, 1);
+}
 
 /* NXP display configs for supported LCD */
 
@@ -170,6 +177,33 @@ static struct nxp_lcd wvga_w50 = {
 		.inv_vsync = 1,
 		.inv_vden = 0,
 	},
+};
+
+static struct nxp_lcd wvga_s430 = {
+	.width= 480,
+	.height = 800,
+	.p_width = 108,
+	.p_height = 64,
+	.bpp = 24,
+	.freq = 60,
+
+	.timing = {
+		.h_fp = 64,
+		.h_bp = 0,
+		.h_sw = 16,
+		.v_fp = 32,
+		.v_fpe = 1,
+		.v_bp = 0,
+		.v_bpe = 1,
+		.v_sw = 16,
+	},
+	.polarity = {
+		.rise_vclk = 1,
+		.inv_hsync = 1,
+		.inv_vsync = 1,
+		.inv_vden = 0,
+	},
+	.gpio_init = s430_gpio_init,
 };
 
 static struct nxp_lcd wsvga_w101 = {
@@ -515,6 +549,7 @@ static struct {
 	{  19, "P43",	&hvga_p43,     0, 0 },
 	{   8, "W35",	&qvga_w35,     0, 0 },
 	{  28, "X710",	&wsvga_x710,   0, 1 },
+	{  31, "S430",	&wvga_s430,  180, 1 },
 
 	/* TODO: Testing */
 	{   4, "W50",	&wvga_w50,     0, 0 },
