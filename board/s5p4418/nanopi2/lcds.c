@@ -65,7 +65,7 @@ static struct nxp_lcd wxga_hd700 = {
 	},
 };
 
-static struct nxp_lcd wxga_hd701 = {
+static struct nxp_lcd wxga_hd702 = {
 	.width = 800,
 	.height = 1280,
 	.p_width = 94,
@@ -507,7 +507,7 @@ static struct {
 } nanopi2_lcd_config[] = {
 	{  25, "HD101",	&wxga_hd101,   0, 1 },
 	{  18, "HD700",	&wxga_hd700, 213, 1 },
-	{  30, "HD701",	&wxga_hd701, 213, 1 },
+	{  30, "HD702",	&wxga_hd702, 213, 1 },
 	{   3, "S70",	&wvga_s70,   128, 1 },
 	{  24, "S702",	&wvga_s70,   128, 3 },
 	{  26, "S70D",	&wvga_s70d,  128, 0 },
