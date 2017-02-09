@@ -540,6 +540,7 @@ static struct {
 	int ctp;
 } nanopi2_lcd_config[] = {
 	{  25, "HD101",	&wxga_hd101,   0, 1 },
+	{  32, "HD101B",&wxga_hd101,   0, 1 },
 	{  18, "HD700",	&wxga_hd700, 213, 1 },
 	{  30, "HD702",	&wxga_hd702, 213, 1 },
 	{   3, "S70",	&wvga_s70,   128, 1 },
