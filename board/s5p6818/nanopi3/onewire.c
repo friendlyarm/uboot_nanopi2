@@ -24,6 +24,7 @@
 #include <platform.h>
 #include <mach-api.h>
 #include <onewire.h>
+#include <i2c.h>
 
 #define SAMPLE_BPS		9600
 #define SAMPLE_IN_US	104		/* (1000000 / BPS) */
@@ -31,7 +32,13 @@
 #define REQ_INFO		0x60U
 #define REQ_BL			0x80U
 
+#define BUS_I2C			0x18
+#define ONEWIRE_I2C_BUS		2
+#define ONEWIRE_I2C_ADDR	0x2f
+
+static int bus_type = -1;
 static int lcd_id = -1;
+static unsigned short lcd_fwrev = 0;
 static int current_brightness = -1;
 
 /* debug */
@@ -147,17 +154,67 @@ static int onewire_session(unsigned char req, unsigned char res[])
 	return ret;
 }
 
+static int onewire_i2c_do_request(unsigned char req, unsigned char *buf)
+{
+	unsigned char tx[4];
+	int ret;
+
+	tx[0] = req;
+	tx[1] = crc8(req << 24, 8);
+	if (i2c_write(ONEWIRE_I2C_ADDR, 0, 0, tx, 2))
+		return -EIO;
+
+	if (!buf) /* NO READ */
+		return 0;
+
+	if (i2c_read(ONEWIRE_I2C_ADDR, 0, 0, buf, 4))
+		return -EIO;
+
+	ret = crc8((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8), 24);
+	DBGOUT("req = %02X, res = %02X%02X%02X%02X, ret = %02x\n",
+			req, buf[0], buf[1], buf[2], buf[3], ret);
+
+	return (ret == buf[3]) ? 0 : -EIO;
+}
+
+static void onewire_i2c_init(void)
+{
+	unsigned char buf[4];
+	int ret;
+
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+	i2c_set_bus_num(ONEWIRE_I2C_BUS);
+
+	if (i2c_probe(ONEWIRE_I2C_ADDR))
+		return;
+
+	ret = onewire_i2c_do_request(REQ_INFO, buf);
+	if (!ret) {
+		lcd_id = buf[0];
+		lcd_fwrev = buf[1] * 0x100 + buf[2];
+		bus_type = BUS_I2C;
+	}
+}
+
 void onewire_init(void)
 {
 	/* See include/cfg_gpio.h */
 	NX_GPIO_SetPadFunction(__IO_GRP, __IO_IDX, NX_GPIO_PADFUNC_1);
 	NX_GPIO_SetPullEnable(__IO_GRP, __IO_IDX, NX_GPIO_PULL_OFF);
+
+	onewire_i2c_init();
 }
 
 int onewire_get_info(unsigned char *lcd, unsigned short *fw_ver)
 {
 	unsigned char res[4];
 	int i;
+
+	if (bus_type == BUS_I2C && lcd_id > 0) {
+		*lcd = lcd_id;
+		*fw_ver = lcd_fwrev;
+		return 0;
+	}
 
 	for (i = 0; i < 3; i++) {
 		if (onewire_session(REQ_INFO, res)) {
@@ -193,6 +250,12 @@ int onewire_set_backlight(int brightness)
 		brightness = 127;
 	else if (brightness < 0)
 		brightness = 0;
+
+	if (bus_type == BUS_I2C) {
+		onewire_i2c_do_request((REQ_BL | brightness), NULL);
+		current_brightness = brightness;
+		return 0;
+	}
 
 	for (i = 0; i < 3; i++) {
 		if (onewire_session((REQ_BL | brightness), res)) {

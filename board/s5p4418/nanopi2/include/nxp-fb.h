@@ -78,11 +78,21 @@ struct nxp_lcd {
 /**
  * Public interfaces
  */
+enum lcd_format {
+	LCD_VESA	= 0,
+	LCD_JEIDA	= 1,
+	LCD_LOC		= 2,
+
+	LCD_RGB		= 4,
+	LCD_HDMI	= 5,
+};
+
 extern int nanopi2_setup_lcd_by_id(int id);
 extern int nanopi2_setup_lcd_by_name(char *name);
 extern struct nxp_lcd *nanopi2_get_lcd(void);
 extern const char *nanopi2_get_lcd_name(void);
 extern int nanopi2_get_lcd_density(void);
+extern enum lcd_format nanopi2_get_lcd_format(void);
 
 #endif /* __MACH_NXP_FB_H__ */
 

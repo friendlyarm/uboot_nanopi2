@@ -614,6 +614,7 @@
 	#define CONFIG_PWM			/* backlight */
 	/* display out device */
 	#define CONFIG_DISPLAY_OUT_RGB
+	#define CONFIG_DISPLAY_OUT_LVDS
 	#define CONFIG_DISPLAY_OUT_HDMI
 
 	/* display logo */

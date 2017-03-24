@@ -79,6 +79,11 @@
 		.lcd_mpu_type	= 0,								\
 	};
 
+#define INIT_PARAM_LVDS(name)							\
+	struct disp_lvds_param name = {							\
+		.lcd_format		= CFG_DISP_LVDS_LCD_FORMAT,			\
+	};
+
 static void nxp_platform_disp_init(struct nxp_lcd *lcd,
 		struct disp_vsync_info *vsync,
 		struct disp_syncgen_param *syncgen,
@@ -145,6 +150,30 @@ static void bd_disp_rgb(void)
 #endif
 }
 
+static void bd_disp_lvds(int format)
+{
+#if defined(CONFIG_DISPLAY_OUT_LVDS)
+	struct nxp_lcd *lcd = nanopi2_get_lcd();
+	const char *type[] = { "VESA", "JEIDA", "POC", "N/A" };
+
+	INIT_VIDEO_SYNC(vsync);
+	INIT_PARAM_SYNCGEN(syncgen);
+	INIT_PARAM_MULTILY(multily);
+	INIT_PARAM_LVDS(lvds);
+
+	nxp_platform_disp_init(lcd, &vsync, &syncgen, &multily);
+	lvds.lcd_format = (format & 0x3);
+
+	display_lvds(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
+			&vsync, &syncgen, &multily, &lvds);
+	mdelay(50);
+
+	printf("LVDS: W=%4d, H=%4d, Bpp=%d (%s)\n", lcd->width, lcd->height,
+			CFG_DISP_PRI_SCREEN_PIXEL_BYTE*8,
+			type[lvds.lcd_format & 0x3]);
+#endif
+}
+
 static void bd_disp_hdmi(void)
 {
 #if defined(CONFIG_DISPLAY_OUT_HDMI)
@@ -178,15 +207,19 @@ static void bd_disp_hdmi(void)
 
 int bd_display(void)
 {
-	const char *name = nanopi2_get_lcd_name();
+	enum lcd_format fmt = nanopi2_get_lcd_format();
 
-	if (strncmp(name, "HDMI", 4) != 0) {
+	if (fmt == LCD_RGB) {
 #if defined(CONFIG_DISPLAY_OUT_RGB)
 		bd_disp_rgb();
 #endif
-	} else {
+	} else if (fmt == LCD_HDMI) {
 #if defined(CONFIG_DISPLAY_OUT_HDMI)
 		bd_disp_hdmi();
+#endif
+	} else {
+#if defined(CONFIG_DISPLAY_OUT_LVDS)
+		bd_disp_lvds(fmt);
 #endif
 	}
 

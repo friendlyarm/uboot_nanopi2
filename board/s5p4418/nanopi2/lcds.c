@@ -538,28 +538,30 @@ static struct {
 	struct nxp_lcd *lcd;
 	int dpi;
 	int ctp;
+	enum lcd_format fmt;
 } nanopi2_lcd_config[] = {
-	{  25, "HD101",	&wxga_hd101,   0, 1 },
-	{  32, "HD101B",&wxga_hd101,   0, 1 },
-	{  18, "HD700",	&wxga_hd700, 213, 1 },
-	{  30, "HD702",	&wxga_hd702, 213, 1 },
-	{   3, "S70",	&wvga_s70,   128, 1 },
-	{  24, "S702",	&wvga_s70,   128, 3 },
-	{  26, "S70D",	&wvga_s70d,  128, 0 },
-	{  14, "H43",	&hvga_h43,     0, 0 },
-	{  19, "P43",	&hvga_p43,     0, 0 },
-	{   8, "W35",	&qvga_w35,     0, 0 },
-	{  28, "X710",	&wsvga_x710,   0, 1 },
-	{  31, "S430",	&wvga_s430,  180, 1 },
+	{  25, "HD101",	&wxga_hd101,   0, 1, LCD_RGB  },
+	{  32, "HD101B",&wxga_hd101,   0, 1, LCD_RGB  },
+	{  18, "HD700",	&wxga_hd700, 213, 1, LCD_RGB  },
+	{  30, "HD702",	&wxga_hd702, 213, 1, LCD_RGB  },
+	{  33, "H70",	&wxga_hd702, 213, 0, LCD_VESA },
+	{   3, "S70",	&wvga_s70,   128, 1, LCD_RGB  },
+	{  24, "S702",	&wvga_s70,   128, 3, LCD_RGB  },
+	{  26, "S70D",	&wvga_s70d,  128, 0, LCD_RGB  },
+	{  14, "H43",	&hvga_h43,     0, 0, LCD_RGB  },
+	{  19, "P43",	&hvga_p43,     0, 0, LCD_RGB  },
+	{   8, "W35",	&qvga_w35,     0, 0, LCD_RGB  },
+	{  28, "X710",	&wsvga_x710,   0, 1, LCD_RGB  },
+	{  31, "S430",	&wvga_s430,  180, 1, LCD_RGB  },
 
 	/* TODO: Testing */
-	{   4, "W50",	&wvga_w50,     0, 0 },
-	{  15, "W101",	&wsvga_w101,   0, 1 },
-	{   5, "L80",	&vga_l80,      0, 1 },
-	{  -1, "A97",	&xga_a97,      0, 0 },
-	{  -1, "LQ150",	&xga_lq150,    0, 1 },
-	{  -1, "BP101",	&wxga_bp101,   0, 1 },
-	{ 128, "HDMI",	&hdmi_def,     0, 0 },	/* Pls keep it at last */
+	{   4, "W50",	&wvga_w50,     0, 0, LCD_RGB  },
+	{  15, "W101",	&wsvga_w101,   0, 1, LCD_RGB  },
+	{   5, "L80",	&vga_l80,      0, 1, LCD_RGB  },
+	{  -1, "A97",	&xga_a97,      0, 0, LCD_RGB  },
+	{  -1, "LQ150",	&xga_lq150,    0, 1, LCD_RGB  },
+	{  -1, "BP101",	&wxga_bp101,   0, 1, LCD_RGB  },
+	{ 128, "HDMI",	&hdmi_def,     0, 0, LCD_HDMI },	/* Pls keep it at last */
 };
 
 static int lcd_idx = 0;
@@ -628,6 +630,11 @@ struct nxp_lcd *nanopi2_get_lcd(void)
 const char *nanopi2_get_lcd_name(void)
 {
 	return nanopi2_lcd_config[lcd_idx].name;
+}
+
+enum lcd_format nanopi2_get_lcd_format(void)
+{
+	return nanopi2_lcd_config[lcd_idx].fmt;
 }
 
 int nanopi2_get_lcd_density(void)
