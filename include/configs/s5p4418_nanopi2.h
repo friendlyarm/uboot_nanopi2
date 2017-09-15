@@ -155,7 +155,7 @@
 #define CONFIG_CMD_RUN					/* run commands in an environment variable	*/
 #define CONFIG_CMDLINE_EDITING			/* add command line history	*/
 #define CONFIG_CMDLINE_TAG				/* use bootargs commandline */
-//#define CONFIG_SETUP_MEMORY_TAGS
+#define CONFIG_SETUP_MEMORY_TAGS
 //#define CONFIG_INITRD_TAG
 //#define CONFIG_SERIAL_TAG
 #define CONFIG_REVISION_TAG

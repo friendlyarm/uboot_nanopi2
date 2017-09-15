@@ -324,6 +324,20 @@ static void bd_bootdev_init(void)
 	}
 }
 
+#define SCR_DREX_BASE		IO_ADDRESS(0xC00E0000)
+#define MEM_ROW_MSK			(0xf << 4)
+
+static void bd_mem_fixup(void)
+{
+	unsigned int memcfg0 = readl(SCR_DREX_BASE + 0x08);
+
+	/* Number of Row: 14 bits */
+	if ((memcfg0 & MEM_ROW_MSK) == 0x20)
+		gd->bd->bi_dram[0].size = 0x20000000;
+	else
+		gd->bd->bi_dram[0].size = 0x40000000;
+}
+
 static void bd_onewire_init(void)
 {
 	unsigned char lcd;
@@ -474,6 +488,7 @@ int board_early_init_f(void)
 int board_init(void)
 {
 	bd_lcd_init();
+	bd_mem_fixup();
 
 	DBGOUT("%s : done board init ...\n", CFG_SYS_BOARD_NAME);
 	return 0;
