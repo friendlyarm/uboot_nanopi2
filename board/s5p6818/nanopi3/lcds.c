@@ -547,6 +547,7 @@ static struct {
 	{  30, "HD702",	&wxga_hd702, 213, 1, LCD_RGB  },
 	{  33, "H70",	&wxga_hd702, 213, 0, LCD_VESA },
 	{   3, "S70",	&wvga_s70,   128, 1, LCD_RGB  },
+	{  36, "S701",	&wvga_s70,   128, 1, LCD_RGB  },
 	{  24, "S702",	&wvga_s70,   128, 3, LCD_RGB  },
 	{  26, "S70D",	&wvga_s70d,  128, 0, LCD_RGB  },
 	{  14, "H43",	&hvga_h43,     0, 0, LCD_RGB  },
