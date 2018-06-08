@@ -46,6 +46,32 @@ static void s430_gpio_init(void)
 
 /* NXP display configs for supported LCD */
 
+static struct nxp_lcd wxga_hd900 = {
+	.width = 1280,
+	.height = 800,
+	.p_width = 151,
+	.p_height = 94,
+	.bpp = 24,
+	.freq = 60,
+
+	.timing = {
+		.h_fp = 33,
+		.h_bp = 33,
+		.h_sw = 33,
+		.v_fp =  4,
+		.v_fpe = 1,
+		.v_bp =  4,
+		.v_bpe = 1,
+		.v_sw =  4,
+	},
+	.polarity = {
+		.rise_vclk = 0,
+		.inv_hsync = 0,
+		.inv_vsync = 1,
+		.inv_vden = 0,
+	},
+};
+
 static struct nxp_lcd wxga_hd700 = {
 	.width = 800,
 	.height = 1280,
@@ -546,6 +572,7 @@ static struct {
 	{  18, "HD700",	&wxga_hd700, 213, 1, LCD_RGB  },
 	{  30, "HD702",	&wxga_hd702, 213, 1, LCD_RGB  },
 	{  33, "H70",	&wxga_hd702, 213, 0, LCD_VESA },
+	{  38, "HD900",	&wxga_hd900, 213, 1, LCD_VESA },
 	{   3, "S70",	&wvga_s70,   128, 1, LCD_RGB  },
 	{  36, "S701",	&wvga_s70,   128, 1, LCD_RGB  },
 	{  24, "S702",	&wvga_s70,   128, 3, LCD_RGB  },
