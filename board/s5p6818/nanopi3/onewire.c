@@ -180,7 +180,7 @@ static int onewire_i2c_do_request(unsigned char req, unsigned char *buf)
 static void onewire_i2c_init(void)
 {
 	unsigned char buf[4];
-	int ret;
+	int i, ret;
 
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_set_bus_num(ONEWIRE_I2C_BUS);
@@ -188,11 +188,16 @@ static void onewire_i2c_init(void)
 	if (i2c_probe(ONEWIRE_I2C_ADDR))
 		return;
 
-	ret = onewire_i2c_do_request(REQ_INFO, buf);
-	if (!ret) {
-		lcd_id = buf[0];
-		lcd_fwrev = buf[1] * 0x100 + buf[2];
-		bus_type = BUS_I2C;
+	for (i = 0; i < 6; i++) {
+		ret = onewire_i2c_do_request(REQ_INFO, buf);
+		if (!ret) {
+			lcd_id = buf[0];
+			lcd_fwrev = buf[1] * 0x100 + buf[2];
+			bus_type = BUS_I2C;
+			return;
+		}
+
+		mdelay(10);
 	}
 }
 
