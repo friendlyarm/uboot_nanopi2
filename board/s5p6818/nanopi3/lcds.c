@@ -584,6 +584,7 @@ static struct {
 	{  28, "X710",	&wsvga_x710,   0, 1, LCD_RGB  },
 	{  31, "S430",	&wvga_s430,  180, 1, LCD_RGB  },
 	{   4, "W50",	&wvga_w50,     0, 0, LCD_RGB  },
+	{  -1, "U101A",	&wxga_hd101,   0, 1, LCD_VESA },
 
 	/* TODO: Testing */
 	{  15, "W101",	&wsvga_w101,   0, 1, LCD_RGB  },
