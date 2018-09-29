@@ -143,9 +143,9 @@ static int disp_lvds_setup(int module, int input, struct disp_vsync_info *psync,
 			|	(0<<26) // CNNCT_MODE_SEL, connectivity mode selection, 0:TX operating, 1:con check
 			|	(0<<24) // CNNCT_CNT, connectivity ctrl pin, 0:tx operating, 1: con check
 			|	(0<<23) // VOD_HIGH_S, VOD control pin, 1 : Vod only
-			|	(0<<22) // SRC_TRH, source termination resistor select pin
-			|	(0x20/*0x3F*/<<14) // CNT_VOD_H, TX driver output differential volatge level control pin
-			|	(0x01<<6) // CNT_PEN_H, TX driver pre-emphasis level control
+			|	(1<<22) // SRC_TRH, source termination resistor select pin
+			|	(0x1F<<14) // CNT_VOD_H, TX driver output differential volatge level control pin
+			|	(0x07<<6) // CNT_PEN_H, TX driver pre-emphasis level control
 			|	(0x4<<3) // FC_CODE, vos control pin
 			|	(0<<2) // OUTCON, TX Driver state selectioin pin, 0:Hi-z, 1:Low
 			|	(0<<1) // LOCK_CNT, Lock signal selection pin, enable

@@ -55,19 +55,19 @@ static struct nxp_lcd wxga_hd900 = {
 	.freq = 60,
 
 	.timing = {
-		.h_fp = 33,
-		.h_bp = 33,
-		.h_sw = 33,
-		.v_fp =  4,
+		.h_fp = 40,
+		.h_bp = 40,
+		.h_sw = 80,
+		.v_fp =  8,
 		.v_fpe = 1,
-		.v_bp =  4,
+		.v_bp =  8,
 		.v_bpe = 1,
-		.v_sw =  4,
+		.v_sw = 32,
 	},
 	.polarity = {
 		.rise_vclk = 0,
 		.inv_hsync = 0,
-		.inv_vsync = 1,
+		.inv_vsync = 0,
 		.inv_vden = 0,
 	},
 };
