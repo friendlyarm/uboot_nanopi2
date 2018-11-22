@@ -33,6 +33,7 @@
 #include <rtc_nxp.h>
 #include <pm.h>
 
+#include <boardrev.h>
 #include <draw_lcd.h>
 #include <onewire.h>
 #include <nxp-fb.h>
@@ -365,6 +366,7 @@ int board_early_init_f(void)
 #if defined(CONFIG_NXP_RTC_USE)
 	nxp_rtc_init();
 #endif
+	board_rev_init();
 	bd_bootdev_init();
 	bd_onewire_init();
 	return 0;

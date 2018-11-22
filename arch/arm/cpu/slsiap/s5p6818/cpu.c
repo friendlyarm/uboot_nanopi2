@@ -183,6 +183,11 @@ void dram_init_banksize(void)
 extern uchar default_environment[];
 gd_t *global_descriptor = NULL;
 
+__weak const char *get_board_name(void)
+{
+	return CONFIG_SYS_BOARD;
+}
+
 void gdt_reset(gd_t *gd, ulong text, ulong sp)
 {
 	ulong text_start, text_end, heap_end;
@@ -229,7 +234,7 @@ void gdt_reset(gd_t *gd, ulong text, ulong sp)
 #ifndef CONFIG_ARM64
 	printf("PC   = 0x%08lx\n", pc);
 #endif
-	printf("TAGS = 0x%08lx \n", gd->bd->bi_boot_params);
+	printf("TAGS = 0x%08lx\n", gd->bd->bi_boot_params);
 	#ifdef CONFIG_MMU_ENABLE
 	ulong page_tlb =  (text_end & 0xffff0000) + 0x10000;
 	printf("PAGE = 0x%08lx~0x%08lx\n", page_tlb, page_tlb + 0xc000 );
@@ -237,9 +242,9 @@ void gdt_reset(gd_t *gd, ulong text, ulong sp)
 	#ifdef CONFIG_SMP
 	printf("SMPSP= 0x%08x (-0x%08x)\n", CONFIG_SYS_SMP_SP_ADDR, CONFIG_SYS_SMP_SP_SIZE*(NR_CPUS-1));
 	#endif
-	printf("MACH = [%ld]   \n", gd->bd->bi_arch_number);
-	printf("VER  = %u      \n", nxp_cpu_version());
-	printf("BOARD= [%s]    \n", CONFIG_SYS_BOARD);
+	printf("MACH = [%ld]\n", gd->bd->bi_arch_number);
+	printf("VER  = %u\n",    nxp_cpu_version());
+	printf("BOARD= [%s]\n",  get_board_name());
 #endif
 }
 #endif
