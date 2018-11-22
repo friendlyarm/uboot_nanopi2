@@ -49,8 +49,8 @@ static void s430_gpio_init(void)
 static struct nxp_lcd wxga_hd900 = {
 	.width = 1280,
 	.height = 800,
-	.p_width = 151,
-	.p_height = 94,
+	.p_width = 194,
+	.p_height =121,
 	.bpp = 24,
 	.freq = 60,
 
@@ -572,7 +572,7 @@ static struct {
 	{  18, "HD700",	&wxga_hd700, 213, 1, LCD_RGB  },
 	{  30, "HD702",	&wxga_hd702, 213, 1, LCD_RGB  },
 	{  33, "H70",	&wxga_hd702, 213, 0, LCD_VESA },
-	{  38, "HD900",	&wxga_hd900, 213, 1, LCD_VESA },
+	{  38, "HD900",	&wxga_hd900, 168, 1, LCD_VESA },
 	{  39, "K101",	&wxga_hd101,   0, 1, LCD_VESA },
 	{   3, "S70",	&wvga_s70,   128, 1, LCD_RGB  },
 	{  36, "S701",	&wvga_s70,   128, 1, LCD_RGB  },
